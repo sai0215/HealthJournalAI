@@ -1,0 +1,527 @@
+Synonym,Mapping
+high temperature,Fever
+elevated temperature,Fever
+feverish,Fever
+feverishness,Fever
+pyrexia,Fever
+temperature rise,Fever
+body heat,Fever
+burning up,Fever
+hot flushes,Fever
+feeling hot,Fever
+heat sensation,Fever
+heat waves,Fever
+hot spells,Fever
+spiking temperature,Fever
+temp spike,Fever
+running a fever,Fever
+temp elevation,Fever
+fever spike,Fever
+warm feeling,Fever
+sweating,Fever
+night sweats,Fever
+chapters of heat,Fever
+heat sensation,Fever
+body warmth,Fever
+throbbing heat,Fever
+intense heat,Fever
+red flush,Fever
+flushed skin,Fever
+skin warmth,Fever
+overheating,Fever
+high fever,Fever
+mild fever,Fever
+low-grade fever,Fever
+moderate fever,Fever
+severe fever,Fever
+serious fever,Fever
+persistent fever,Fever
+intermittent fever,Fever
+febrile state,Fever
+febrility,Fever
+cold,Cough
+throat clearing,Cough
+cough fit,Cough
+persistent cough,Cough
+wet cough,Cough
+dry cough,Cough
+tickle in throat,Cough
+cough reflex,Cough
+chesty cough,Cough
+barking cough,Cough
+brassy cough,Cough
+hoarse cough,Cough
+hacking cough,Cough
+repetitive cough,Cough
+spasmodic cough,Cough
+coughing spell,Cough
+cough attack,Cough
+coughing fit,Cough
+phlegmy cough,Cough
+productive cough,Cough
+nonproductive cough,Cough
+coughing,Cough
+gagging,Cough
+retching,Cough
+croupy cough,Cough
+seal cough,Cough
+honking cough,Cough
+smoker’s cough,Cough
+morning cough,Cough
+night cough,Cough
+daytime cough,Cough
+frequent cough,Cough
+throat cough,Cough
+laryngeal cough,Cough
+bronchial cough,Cough
+chronic cough,Cough
+acute cough,Cough
+forceful cough,Cough
+hollow cough,Cough
+wet hacking,Cough
+dry hacking,Cough
+lung cough,Cough
+tiredness,Fatigue
+weariness,Fatigue
+exhaustion,Fatigue
+lethargy,Fatigue
+sluggishness,Fatigue
+drowsiness,Fatigue
+weakness,Fatigue
+lack of energy,Fatigue
+fatigued,Fatigue
+drained,Fatigue
+burnt out,Fatigue
+fatigability,Fatigue
+low energy,Fatigue
+heavy limbs,Fatigue
+listlessness,Fatigue
+lassitude,Fatigue
+sapped,Fatigue
+spent,Fatigue
+worn out,Fatigue
+worn-down,Fatigue
+enervated,Fatigue
+listless,Fatigue
+tuckered out,Fatigue
+played out,Fatigue
+tiresome,Fatigue
+weary,Fatigue
+dog-tired,Fatigue
+dead-tired,Fatigue
+bone-weary,Fatigue
+back-breaking exhaustion,Fatigue
+prostrate,Fatigue
+pooped,Fatigue
+zonked,Fatigue
+knackered,Fatigue
+spent,Fatigue
+flagging,Fatigue
+run-down,Fatigue
+knackered,Fatigue
+lashed,Fatigue
+washed out,Fatigue
+deadbeat,Fatigue
+sapped,Fatigue
+stamina loss,Fatigue
+energy drain,Fatigue
+queasiness,Nausea
+upset stomach,Nausea
+feeling sick,Nausea
+stomach upset,Nausea
+queasy feeling,Nausea
+urge to vomit,Nausea
+sick feeling,Nausea
+churning stomach,Nausea
+fluttery stomach,Nausea
+tummy discomfort,Nausea
+nauseous sensation,Nausea
+need to vomit,Nausea
+bilious feeling,Nausea
+green around the gills,Nausea
+ill at ease,Nausea
+sickish,Nausea
+nauseated,Nausea
+dizzy,Nausea
+uneasy stomach,Nausea
+fluttering gut,Nausea
+wilting,Nausea
+sick to the stomach,Nausea
+bilious,Nausea
+off-color,Nausea
+off-colour,Nausea
+seasick sensation,Nausea
+car sick feeling,Nausea
+motion sick feeling,Nausea
+stomach quease,Nausea
+gut churn,Nausea
+gag reflex,Nausea
+retch onset,Nausea
+biliousness,Nausea
+yelping,Nausea
+stomach flutter,Nausea
+stomach churn,Nausea
+spinny,Nausea
+swirly head,Nausea
+lurching,Nausea
+sickish feeling,Nausea
+throwing up,Vomiting
+puking,Vomiting
+barfing,Vomiting
+heaving,Vomiting
+regurgitating,Vomiting
+being sick,Vomiting
+spewing,Vomiting
+upchucking,Vomiting
+hurling,Vomiting
+yakking,Vomiting
+vomit expulsion,Vomiting
+retching,Vomiting
+gagging,Vomiting
+chundering,Vomiting
+projectile vomiting,Vomiting
+bringing up,Vomiting
+spewage,Vomiting
+disgorging,Vomiting
+vomit reflex,Vomiting
+hocking,Vomiting
+spitting up,Vomiting
+vomit episode,Vomiting
+yawning (rare),Vomiting
+blowing chunks,Vomiting
+tossing cookies,Vomiting
+hurl,Vomiting
+horking,Vomiting
+flooring it,Vomiting
+pukefest,Vomiting
+bilious discharge,Vomiting
+woozing,Vomiting
+vomitary,Vomiting
+vomitious,Vomiting
+violent vomiting,Vomiting
+gastric expulsion,Vomiting
+oral expulsion,Vomiting
+cholergic purge,Vomiting
+vommitting (typo),Vomiting
+vomitus emission,Vomiting
+stomach purge,Vomiting
+gut emptying,Vomiting
+regurge,Vomiting
+breathlessness,Shortness_of_Breath
+difficulty breathing,Shortness_of_Breath
+out of breath,Shortness_of_Breath
+labored breathing,Shortness_of_Breath
+gasping,Shortness_of_Breath
+panting,Shortness_of_Breath
+breathing difficulty,Shortness_of_Breath
+winded,Shortness_of_Breath
+unable to breathe well,Shortness_of_Breath
+tight breathing,Shortness_of_Breath
+chest tightness,Shortness_of_Breath
+dyspnea,Shortness_of_Breath
+air hunger,Shortness_of_Breath
+respiratory distress,Shortness_of_Breath
+breath struggle,Shortness_of_Breath
+oxygen shortage,Shortness_of_Breath
+suffocating feeling,Shortness_of_Breath
+smothering sensation,Shortness_of_Breath
+gasp reflex,Shortness_of_Breath
+panting spell,Shortness_of_Breath
+windlessness,Shortness_of_Breath
+panting fit,Shortness_of_Breath
+short breath,Shortness_of_Breath
+hard to breathe,Shortness_of_Breath
+air starvation,Shortness_of_Breath
+air hunger convulsion,Shortness_of_Breath
+hyperventilation,Shortness_of_Breath
+shallow breaths,Shortness_of_Breath
+rapid breathing,Shortness_of_Breath
+laboured respiration,Shortness_of_Breath
+sharp breath,Shortness_of_Breath
+breath catch,Shortness_of_Breath
+catching breath,Shortness_of_Breath
+struggling breath,Shortness_of_Breath
+constricted breath,Shortness_of_Breath
+tight chest,Shortness_of_Breath
+gurgling breath,Shortness_of_Breath
+whistling breath,Shortness_of_Breath
+noisy breathing,Shortness_of_Breath
+respiratory struggle,Shortness_of_Breath
+chest ache,Chest_Pain
+chest discomfort,Chest_Pain
+chest tightness,Chest_Pain
+pain in chest,Chest_Pain
+chest soreness,Chest_Pain
+chest pressure,Chest_Pain
+tight chest,Chest_Pain
+constriction in chest,Chest_Pain
+stabbing chest pain,Chest_Pain
+heartburn,Chest_Pain
+angina-like pain,Chest_Pain
+thoracic pain,Chest_Pain
+precordial pain,Chest_Pain
+sternal pain,Chest_Pain
+retro-sternal pain,Chest_Pain
+burning chest,Chest_Pain
+pressure-like chest pain,Chest_Pain
+squeezing chest,Chest_Pain
+crushing chest pain,Chest_Pain
+dull chest ache,Chest_Pain
+sharp chest pain,Chest_Pain
+pricking chest pain,Chest_Pain
+gnawing pain,Chest_Pain
+knife-like pain,Chest_Pain
+heart pain,Chest_Pain
+cardiac pain,Chest_Pain
+tightness across chest,Chest_Pain
+rib pain,Chest_Pain
+costal pain,Chest_Pain
+thorax ache,Chest_Pain
+mid-chest pain,Chest_Pain
+upper chest pain,Chest_Pain
+lower chest ache,Chest_Pain
+sternal pressure,Chest_Pain
+thoracic discomfort,Chest_Pain
+pulsing chest pain,Chest_Pain
+aching chest,Chest_Pain
+throbbing chest pain,Chest_Pain
+throat pain,Sore_Throat
+throat irritation,Sore_Throat
+scratchy throat,Sore_Throat
+throat soreness,Sore_Throat
+painful swallowing,Sore_Throat
+throat discomfort,Sore_Throat
+irritated throat,Sore_Throat
+phlegmy throat,Sore_Throat
+hoarse throat,Sore_Throat
+raw throat,Sore_Throat
+burning throat,Sore_Throat
+itchy throat,Sore_Throat
+tickle in throat,Sore_Throat
+throat ache,Sore_Throat
+frozen throat,Sore_Throat
+dry throat,Sore_Throat
+raspy throat,Sore_Throat
+rough throat,Sore_Throat
+strangled throat,Sore_Throat
+tight throat,Sore_Throat
+scratchiness in throat,Sore_Throat
+larynx pain,Sore_Throat
+dysphagia pain,Sore_Throat
+odynophagia,Sore_Throat
+inflamed throat,Sore_Throat
+swollen throat,Sore_Throat
+swell in throat,Sore_Throat
+thick mucus,Sore_Throat
+mucus buildup,Sore_Throat
+throat tickle,Sore_Throat
+throat scrape,Sore_Throat
+scraped throat,Sore_Throat
+brittle throat,Sore_Throat
+throat rasp,Sore_Throat
+tracheal pain,Sore_Throat
+voice pain,Sore_Throat
+vocal strain,Sore_Throat
+vocal pain,Sore_Throat
+pharyngeal pain,Sore_Throat
+pharynx ache,Sore_Throat
+sniffles,Runny Nose
+nasal drip,Runny Nose
+drippy nose,Runny Nose
+sniffling,Runny Nose
+watery nose,Runny Nose
+dripping nose,Runny Nose
+runny nostrils,Runny Nose
+constant sniffing,Runny Nose
+nasal discharge,Runny Nose
+rhinorrhea,Runny Nose
+snotty nose,Runny Nose
+runny snout,Runny Nose
+nasal flow,Runny Nose
+wet nose,Runny Nose
+fluid nose,Runny Nose
+dribbling nose,Runny Nose
+nose leak,Runny Nose
+leaky nose,Runny Nose
+mucus leak,Runny Nose
+mucus run,Runny Nose
+clear discharge,Runny Nose
+serous discharge,Runny Nose
+post-nasal drip,Runny Nose
+gushing mucus,Runny Nose
+leaking mucus,Runny Nose
+nose drip,Runny Nose
+nose watering,Runny Nose
+nose streaming,Runny Nose
+wet nostrils,Runny Nose
+run out of nose,Runny Nose
+nose dissolution,Runny Nose
+liquid nose,Runny Nose
+overflow nose,Runny Nose
+nasal overflow,Runny Nose
+eye watering (assoc),Runny Nose
+tear-duct run,Runny Nose
+fluid dribble,Runny Nose
+nasal seepage,Runny Nose
+loose stools,Diarrhea
+watery stools,Diarrhea
+loose bowels,Diarrhea
+frequent stools,Diarrhea
+runny stools,Diarrhea
+belly runs,Diarrhea
+the runs,Diarrhea
+stool looseness,Diarrhea
+loose motions,Diarrhea
+diarrhoea,Diarrhea
+soft stools,Diarrhea
+urgent stools,Diarrhea
+liquid stool,Diarrhea
+pasty stools,Diarrhea
+unformed stools,Diarrhea
+bowel looseness,Diarrhea
+bowel run,Diarrhea
+Gastro stool,Diarrhea
+flowing stool,Diarrhea
+loose feces,Diarrhea
+watery feces,Diarrhea
+soft feces,Diarrhea
+muddy stool,Diarrhea
+porridge stool,Diarrhea
+soggy stool,Diarrhea
+sloppy stool,Diarrhea
+loose stool episode,Diarrhea
+colonic flow,Diarrhea
+intestinal flow,Diarrhea
+rapid transit stool,Diarrhea
+hyper-motile stool,Diarrhea
+stool urgency,Diarrhea
+viscous discharge,Diarrhea
+fluid stool,Diarrhea
+diarrheal discharge,Diarrhea
+urgent bowel,Diarrhea
+frequent bowel movements,Diarrhea
+bowel discharge,Diarrhea
+colitis stool,Diarrhea
+enteric flow,Diarrhea
+liquid bowel,Diarrhea
+skin irritation,Rash
+skin eruption,Rash
+red spots,Rash
+redness,Rash
+blotches,Rash
+bumps,Rash
+breakout,Rash
+itchy skin,Rash
+inflamed skin,Rash
+dermatitis,Rash
+rash outbreak,Rash
+hives,Rash
+welts,Rash
+maculopapular rash,Rash
+papular rash,Rash
+vesicular rash,Rash
+urticaria,Rash
+skin rash,Rash
+pruritic rash,Rash
+pruritus,Rash
+erythema,Rash
+skin redness,Rash
+rash spots,Rash
+spotted rash,Rash
+rash patches,Rash
+rash lesions,Rash
+rash bumps,Rash
+rash welts,Rash
+raised rash,Rash
+flat rash,Rash
+rash outbreak,Rash
+lesion eruption,Rash
+dermal eruption,Rash
+skin breakout,Rash
+skin blotches,Rash
+exanthema,Rash
+measles-like rash,Rash
+allergic rash,Rash
+contact rash,Rash
+atopic rash,Rash
+prickly rash,Rash
+head pain,Headache
+throbbing head,Headache
+pounding head,Headache
+head pressure,Headache
+head discomfort,Headache
+splitting head,Headache
+buzzing head,Headache
+aching head,Headache
+head throbbing,Headache
+migraine,Headache
+tension headache,Headache
+cluster headache,Headache
+sinus headache,Headache
+stress headache,Headache
+bilateral headache,Headache
+unilateral headache,Headache
+temporal headache,Headache
+occipital headache,Headache
+forehead pain,Headache
+skull ache,Headache
+crown headache,Headache
+neuralgic headache,Headache
+vascular headache,Headache
+dull ache,Headache
+sharp ache,Headache
+stabbing headache,Headache
+pulsating headache,Headache
+light-sensitive headache,Headache
+noise-sensitive headache,Headache
+eye ache,Headache
+brain ache,Headache
+cerebral pressure,Headache
+temple ache,Headache
+vertex headache,Headache
+holocranial pain,Headache
+hemicrania,Headache
+icepick headache,Headache
+thunderclap headache,Headache
+morning headache,Headache
+hormonal headache,Headache
+muscle pain,Muscle_Aches
+sore muscles,Muscle_Aches
+aching muscles,Muscle_Aches
+muscle soreness,Muscle_Aches
+muscle discomfort,Muscle_Aches
+muscle stiffness,Muscle_Aches
+body aches,Muscle_Aches
+muscle ache,Muscle_Aches
+muscle cramps,Muscle_Aches
+myalgia,Muscle_Aches
+muscle fatigue,Muscle_Aches
+muscle tenderness,Muscle_Aches
+muscle tightness,Muscle_Aches
+muscle throbbing,Muscle_Aches
+muscle spasms,Muscle_Aches
+muscle twinge,Muscle_Aches
+lactic acid ache,Muscle_Aches
+post-exertion ache,Muscle_Aches
+fibromyalgia-like pain,Muscle_Aches
+deep muscle ache,Muscle_Aches
+superficial muscle ache,Muscle_Aches
+muscle pull,Muscle_Aches
+muscle strain,Muscle_Aches
+DOMS,Muscle_Aches
+muscle knot,Muscle_Aches
+trigger point pain,Muscle_Aches
+muscle burning,Muscle_Aches
+muscle soreness,Muscle_Aches
+everywhere ache,Muscle_Aches
+full-body ache,Muscle_Aches
+muscle ache episode,Muscle_Aches
+muscle inflammation,Muscle_Aches
+myofascial pain,Muscle_Aches
+musculoskeletal pain,Muscle_Aches
+muscle rigidity,Muscle_Aches
+muscle stiffness,Muscle_Aches
+stiff muscles,Muscle_Aches
+limb ache,Muscle_Aches
+uprooted ache,Muscle_Aches
+widespread muscle pain,Muscle_Aches

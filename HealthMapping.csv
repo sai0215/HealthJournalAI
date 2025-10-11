@@ -1,0 +1,21 @@
+﻿Symptom,Possible Conditions,Condition Description,Suggested Tests,Recommended Action,Department to Consult
+Fever,"Flu, COVID-19, Malaria","Elevated body temperature often caused by infections (viral, bacterial, or parasitic).","Blood Test, RT-PCR","Monitor temperature, rest, hydrate. Seek help if fever persists beyond 3 days.",General Medicine
+Chest Pain,"Heart Attack, Anxiety","Discomfort in chest, possibly due to cardiovascular or stress-related issues.","ECG, Troponin Test",Seek immediate medical attention if pain is severe or radiates.,Cardiology
+Headache,"Migraine, Tension Headache","Pain in the head due to stress, fatigue, or neurological causes.","Neurological Exam, CT Scan","Rest in a dark room, avoid triggers, take prescribed meds.",Neurology
+Shortness of Breath,"Asthma, COVID-19",Breathing difficulty due to respiratory or viral conditions.,"Chest X-ray, Oxygen Saturation Test",Use inhalers if prescribed. Seek urgent care if worsening.,Pulmonology
+Abdominal Pain,"Gastritis, Appendicitis",Pain in the abdomen caused by digestive issues or inflammation.,"Abdominal Ultrasound, CBC",Avoid spicy food. Visit ER if vomiting or pain intensifies.,Gastroenterology
+Back Pain,"Muscle Strain, Slipped Disc",Lower back discomfort from posture issues or disc displacement.,"Spine X-ray, MRI","Rest, apply heat, consider physiotherapy.",Orthopedics
+Skin Rash,"Allergy, Eczema","Red, itchy patches from allergens or chronic skin disorders.","Skin Prick Test, Dermatological Exam","Apply creams, avoid allergens.",Dermatology
+Frequent Urination,"UTI, Diabetes",Increased urination due to infection or elevated blood glucose.,"Urine Analysis, Blood Sugar Test","Drink fluids, seek medical care if persistent.",Urology
+Fatigue,"Anemia, Hypothyroidism",Persistent tiredness from hormonal or blood-related disorders.,"CBC, Thyroid Function Test","Rest, eat well, take prescribed supplements or meds.",Endocrinology
+Blurred Vision,"Glaucoma, Diabetic Retinopathy",Vision issues due to high eye pressure or diabetes.,"Eye Pressure Test, Fundus Exam",See ophthalmologist immediately to avoid long-term damage.,Ophthalmology
+Dizziness,"Vertigo, Low Blood Pressure",A feeling of spinning or loss of balance due to inner ear or circulatory issues.,"BP Monitoring, Audiometry","Sit or lie down, avoid sudden movements.",ENT / Neurology
+Joint Pain,"Arthritis, Lupus",Pain in joints due to inflammation or autoimmune causes.,"Rheumatoid Factor Test, ANA Test","Use anti-inflammatory meds, physical therapy.",Rheumatology
+Palpitations,"Arrhythmia, Anxiety",Rapid or irregular heartbeats due to heart rhythm issues or stress.,"ECG, Holter Monitor",Avoid caffeine/stimulants. Follow up with cardiologist.,Cardiology
+Nausea & Vomiting,"Food Poisoning, Gastroenteritis","Stomach discomfort leading to vomiting, often from infections or toxins.","Stool Test, Electrolyte Panel",Rehydrate with ORS. Avoid solid food temporarily.,General Medicine
+Cough (Dry or Wet),"Common Cold, Bronchitis","Reflex to clear airways, either from infections or irritants.","Chest X-ray, Sputum Culture",Use cough syrup or inhalers as prescribed.,Pulmonology
+Swelling in Legs,"Deep Vein Thrombosis, Kidney Disease",Fluid accumulation or clotting leading to swelling.,"Doppler Scan, Renal Function Test","Elevate legs, seek immediate attention for sudden swelling.",Vascular / Nephrology
+Night Sweats,"Tuberculosis, Hyperthyroidism",Excessive sweating at night often due to infections or hormonal issues.,"Chest X-ray, Thyroid Test","Maintain hygiene, visit doctor for TB or thyroid check.",General Medicine / Endocrinology
+Weight Loss (Unexplained),"Cancer, Hyperthyroidism","Significant weight reduction without dieting, may indicate serious illness.","Full Body Scan, Thyroid Panel","Track food intake, get thorough checkup.",Endocrinology / Oncology
+Loss of Appetite,"Depression, Liver Disorder",Reduced desire to eat due to mental health or organ issues.,"Liver Function Test, Psychological Evaluation","Small frequent meals, consider counseling or treatment.",Psychiatry / Hepatology
+Memory Loss,"Alzheimer’s, Vitamin B12 Deficiency",Difficulty remembering due to neurological or nutritional issues.,"MRI Brain, Vitamin B12 Test","Include B12-rich food, mental exercises, consult specialist.",Neurology
