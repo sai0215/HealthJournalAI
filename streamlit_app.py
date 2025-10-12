@@ -223,7 +223,7 @@ if st.session_state.stage == 'welcome':
         st.subheader("📋 Enter Your Patient ID")
         patient_id_input = st.text_input(
             "Patient ID / UHID",
-            placeholder="e.g., P001, P002, P003...",
+            placeholder="e.g., GEN10001, GEN10002, GEN10003...",
             help="Enter your unique patient identification number"
         )
 
@@ -252,49 +252,90 @@ elif st.session_state.stage == 'patient_info':
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.markdown(f"### Patient ID: {st.session_state.patient_id}")
+        st.markdown(f"""
+        <div style="background-color: #e3f2fd; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+            <h4 style="margin: 0; color: #1976d2; font-size: 16px;">🆔 Patient ID: {st.session_state.patient_id}</h4>
+        </div>
+        """, unsafe_allow_html=True)
 
         # Display patient records
         patient_records = st.session_state.patient_records
 
         # Basic Information
-        st.subheader("👤 Basic Information")
-        basic_info_cols = st.columns(3)
-        with basic_info_cols[0]:
-            st.metric("Name", patient_records.get('Name', 'N/A'))
-        with basic_info_cols[1]:
-            # Calculate age from DOB
-            dob = patient_records.get('DOB')
-            if pd.notna(dob) and dob:
-                from datetime import datetime
-                if isinstance(dob, str):
-                    dob = datetime.strptime(dob, '%Y-%m-%d')
-                age = datetime.now().year - dob.year
-                st.metric("Age", age)
-            else:
-                st.metric("Age", 'N/A')
-        with basic_info_cols[2]:
-            st.metric("Gender", patient_records.get('Gender', 'N/A'))
+        st.markdown("""
+        <div style="margin: 20px 0 15px 0;">
+            <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">👤 Basic Information</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Calculate age from DOB
+        dob = patient_records.get('DOB')
+        age = 'N/A'
+        if pd.notna(dob) and dob:
+            from datetime import datetime
+            if isinstance(dob, str):
+                dob = datetime.strptime(dob, '%Y-%m-%d')
+            age = datetime.now().year - dob.year
+
+        # Create a clean and elegant basic information display
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin: 15px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                <div style="flex: 1; min-width: 200px;">
+                    <p style="margin: 0; font-size: 12px; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px;">👤 Name</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 600; color: #2c3e50;">{patient_records.get('Name', 'N/A')}</p>
+                </div>
+                <div style="flex: 1; min-width: 100px;">
+                    <p style="margin: 0; font-size: 12px; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px;">🎂 Age</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 600; color: #2c3e50;">{age}</p>
+                </div>
+                <div style="flex: 1; min-width: 100px;">
+                    <p style="margin: 0; font-size: 12px; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px;">⚥ Gender</p>
+                    <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 600; color: #2c3e50;">{patient_records.get('Gender', 'N/A')}</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
         # Medical History
-        st.subheader("🏥 Medical History")
+        st.markdown("""
+        <div style="margin: 25px 0 15px 0;">
+            <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">🏥 Medical History</h3>
+        </div>
+        """, unsafe_allow_html=True)
 
-        col_a, col_b = st.columns(2)
-        with col_a:
-            st.markdown("**Drug Allergies:**")
-            allergies = patient_records.get('Drug Allergies', 'None')
-            if pd.isna(allergies) or allergies == 'None' or allergies == '':
-                st.success("✅ No known drug allergies")
-            else:
-                st.warning(f"⚠️ {allergies}")
+        # Get medical history data
+        allergies = patient_records.get('Drug Allergies', 'None')
+        history = patient_records.get('Past Medical History', 'None')
 
-        with col_b:
-            st.markdown("**Past Medical History:**")
-            history = patient_records.get('Past Medical History', 'None')
-            if pd.isna(history) or history == 'None' or history == '':
-                st.success("✅ No significant medical history")
-            else:
-                st.info(f"📋 {history}")
+        # Clean up the data
+        if pd.isna(allergies) or allergies == 'None' or allergies == '':
+            allergies = 'No known drug allergies'
+            allergy_status = 'success'
+        else:
+            allergy_status = 'warning'
+
+        if pd.isna(history) or history == 'None' or history == '':
+            history = 'No significant medical history'
+            history_status = 'success'
+        else:
+            history_status = 'info'
+
+        # Create elegant medical history display with appealing background
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 12px; margin: 15px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #28a745; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">💊 Drug Allergies</h4>
+                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{allergies}</p>
+                </div>
+                <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #17a2b8; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">📋 Past Medical History</h4>
+                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{history}</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
         st.markdown("---")
 
