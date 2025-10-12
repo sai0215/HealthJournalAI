@@ -79,6 +79,7 @@ API_KEY = os.environ.get("PERPLEXITY_API_KEY", "your_perplexity_api_key_here")
 BASE_URL = os.environ.get("PERPLEXITY_BASE_URL", "https://api.perplexity.ai")
 MODEL = os.environ.get("PERPLEXITY_MODEL", "sonar-pro")
 
+
 @st.cache_resource
 def initialize_project():
     """Initialize the project once"""
@@ -87,6 +88,7 @@ def initialize_project():
     project = project_init(project)
     project.kickoff_id = "streamlit_session"
     return project
+
 
 @st.cache_data
 def load_patient_data():
@@ -98,8 +100,9 @@ def load_patient_data():
         logging.error(f"Error loading patient data: {e}")
         return pd.DataFrame()
 
+
 def serialize_patient_info(patient_info):
-    """Convert datetime objects to strings for serialization"""
+    """Convert datetime objects to strings for serialization and calculate age"""
     serializable_info = {}
     for key, value in patient_info.items():
         if isinstance(value, datetime):
@@ -108,19 +111,30 @@ def serialize_patient_info(patient_info):
             serializable_info[key] = "N/A"
         else:
             serializable_info[key] = value
+
+    # Calculate age from DOB if available
+    dob = patient_info.get('DOB')
+    if pd.notna(dob) and dob:
+        if isinstance(dob, str):
+            dob = datetime.strptime(dob, '%Y-%m-%d')
+        age = datetime.now().year - dob.year
+        serializable_info['Age'] = age
+
     return serializable_info
+
 
 def recommend_diagnostic_tests(symptoms):
     """Recommend diagnostic tests based on symptoms"""
     recommendations = []
-    
+
     if not symptoms:
         return ["No significant symptom changes reported. Monitor patient."]
-    
+
     symptoms_lower = symptoms.lower()
-    
+
     if "fever" in symptoms_lower:
-        recommendations.append("🔬 CBC (Complete Blood Count) for fever pattern")
+        recommendations.append(
+            "🔬 CBC (Complete Blood Count) for fever pattern")
     if "cough" in symptoms_lower:
         recommendations.append("🫁 Chest X-Ray for persistent cough")
     if "fatigue" in symptoms_lower:
@@ -133,8 +147,9 @@ def recommend_diagnostic_tests(symptoms):
         recommendations.append("❤️ ECG and cardiac enzyme tests")
     if "breathing" in symptoms_lower or "breath" in symptoms_lower:
         recommendations.append("🌬️ Pulmonary function tests")
-    
+
     return recommendations if recommendations else ["General health screening recommended"]
+
 
 # Initialize session state
 if 'stage' not in st.session_state:
@@ -158,7 +173,7 @@ patient_data = load_patient_data()
 with st.sidebar:
     st.title("🏥 Health Assistant")
     st.markdown("---")
-    
+
     # Progress indicator
     stages = {
         'welcome': '1️⃣ Patient ID',
@@ -166,17 +181,17 @@ with st.sidebar:
         'symptoms': '3️⃣ Symptoms',
         'summary': '4️⃣ Summary'
     }
-    
+
     st.subheader("Progress")
     for stage_key, stage_name in stages.items():
         if st.session_state.stage == stage_key:
             st.markdown(f"**➤ {stage_name}**")
         else:
             st.markdown(f"　 {stage_name}")
-    
+
     st.markdown("---")
     st.info("📊 **Total Patients:** " + str(len(patient_data)))
-    
+
     if st.button("🔄 Reset Session"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
@@ -186,9 +201,9 @@ with st.sidebar:
 if st.session_state.stage == 'welcome':
     st.title("🏥 Welcome to Health Assistant")
     st.markdown("### Your AI-Powered Healthcare Companion")
-    
+
     col1, col2 = st.columns([2, 1])
-    
+
     with col1:
         st.markdown("""
         <div class="info-box">
@@ -201,9 +216,9 @@ if st.session_state.stage == 'welcome':
         </ol>
         </div>
         """, unsafe_allow_html=True)
-        
+
         st.markdown("---")
-        
+
         # Patient ID input
         st.subheader("📋 Enter Your Patient ID")
         patient_id_input = st.text_input(
@@ -211,62 +226,59 @@ if st.session_state.stage == 'welcome':
             placeholder="e.g., P001, P002, P003...",
             help="Enter your unique patient identification number"
         )
-        
+
         if st.button("Continue ➡️"):
             if patient_id_input:
                 # Validate patient ID
                 if patient_id_input in patient_data['Patient ID'].astype(str).values:
                     st.session_state.patient_id = patient_id_input
-                    
+
                     # Fetch patient records
-                    patient_row = patient_data[patient_data['Patient ID'].astype(str) == patient_id_input]
-                    st.session_state.patient_records = patient_row.iloc[0].to_dict()
+                    patient_row = patient_data[patient_data['Patient ID'].astype(
+                        str) == patient_id_input]
+                    st.session_state.patient_records = patient_row.iloc[0].to_dict(
+                    )
                     st.session_state.stage = 'patient_info'
                     st.rerun()
                 else:
                     st.error("❌ Invalid Patient ID. Please check and try again.")
             else:
                 st.warning("⚠️ Please enter a Patient ID to continue.")
-    
-    with col2:
-        st.markdown("""
-        <div class="warning-box">
-        <h4>ℹ️ Sample Patient IDs</h4>
-        <p>You can use these for testing:</p>
-        <ul>
-            <li>P001</li>
-            <li>P002</li>
-            <li>P003</li>
-            <li>P004</li>
-            <li>P005</li>
-        </ul>
-        </div>
-        """, unsafe_allow_html=True)
+
 
 elif st.session_state.stage == 'patient_info':
     st.title("📋 Patient Information Review")
-    
+
     col1, col2 = st.columns([2, 1])
-    
+
     with col1:
         st.markdown(f"### Patient ID: {st.session_state.patient_id}")
-        
+
         # Display patient records
         patient_records = st.session_state.patient_records
-        
+
         # Basic Information
         st.subheader("👤 Basic Information")
         basic_info_cols = st.columns(3)
         with basic_info_cols[0]:
-            st.metric("Name", patient_records.get('Patient Name', 'N/A'))
+            st.metric("Name", patient_records.get('Name', 'N/A'))
         with basic_info_cols[1]:
-            st.metric("Age", patient_records.get('Age', 'N/A'))
+            # Calculate age from DOB
+            dob = patient_records.get('DOB')
+            if pd.notna(dob) and dob:
+                from datetime import datetime
+                if isinstance(dob, str):
+                    dob = datetime.strptime(dob, '%Y-%m-%d')
+                age = datetime.now().year - dob.year
+                st.metric("Age", age)
+            else:
+                st.metric("Age", 'N/A')
         with basic_info_cols[2]:
-            st.metric("Gender", patient_records.get('Sex', 'N/A'))
-        
+            st.metric("Gender", patient_records.get('Gender', 'N/A'))
+
         # Medical History
         st.subheader("🏥 Medical History")
-        
+
         col_a, col_b = st.columns(2)
         with col_a:
             st.markdown("**Drug Allergies:**")
@@ -275,7 +287,7 @@ elif st.session_state.stage == 'patient_info':
                 st.success("✅ No known drug allergies")
             else:
                 st.warning(f"⚠️ {allergies}")
-        
+
         with col_b:
             st.markdown("**Past Medical History:**")
             history = patient_records.get('Past Medical History', 'None')
@@ -283,9 +295,9 @@ elif st.session_state.stage == 'patient_info':
                 st.success("✅ No significant medical history")
             else:
                 st.info(f"📋 {history}")
-        
+
         st.markdown("---")
-        
+
         # Additional information form
         st.subheader("🆕 Additional Health Information")
         additional_info = st.text_area(
@@ -294,12 +306,12 @@ elif st.session_state.stage == 'patient_info':
             height=100,
             help="This helps us provide better recommendations"
         )
-        
+
         if st.button("Continue to Symptoms ➡️"):
             st.session_state.additional_info = additional_info
             st.session_state.stage = 'symptoms'
             st.rerun()
-    
+
     with col2:
         st.markdown("""
         <div class="info-box">
@@ -308,19 +320,19 @@ elif st.session_state.stage == 'patient_info':
         <p>If you notice any discrepancies, please contact your healthcare provider.</p>
         </div>
         """, unsafe_allow_html=True)
-        
+
         if st.button("⬅️ Back"):
             st.session_state.stage = 'welcome'
             st.rerun()
 
 elif st.session_state.stage == 'symptoms':
     st.title("🩺 Symptom Assessment")
-    
+
     col1, col2 = st.columns([2, 1])
-    
+
     with col1:
         st.markdown(f"### Patient ID: {st.session_state.patient_id}")
-        
+
         st.subheader("📝 Current Symptoms")
         st.markdown("""
         Please describe any symptoms you're experiencing. Be as specific as possible.
@@ -329,22 +341,22 @@ elif st.session_state.stage == 'symptoms':
         - How severe are they (mild, moderate, severe)?
         - Any triggers or patterns?
         """)
-        
+
         symptom_changes = st.text_area(
             "Describe your symptoms:",
             placeholder="e.g., Persistent fever for 3 days, mild headache in the morning, fatigue throughout the day...",
             height=150,
             help="The more details you provide, the better recommendations we can make"
         )
-        
+
         st.markdown("---")
-        
+
         # Quick symptom selector
         st.subheader("✅ Quick Symptom Selector")
         st.markdown("Select any symptoms that apply:")
-        
+
         col_s1, col_s2, col_s3 = st.columns(3)
-        
+
         quick_symptoms = []
         with col_s1:
             if st.checkbox("🌡️ Fever"):
@@ -353,7 +365,7 @@ elif st.session_state.stage == 'symptoms':
                 quick_symptoms.append("fatigue")
             if st.checkbox("🤕 Headache"):
                 quick_symptoms.append("headache")
-        
+
         with col_s2:
             if st.checkbox("🤧 Cough"):
                 quick_symptoms.append("cough")
@@ -361,7 +373,7 @@ elif st.session_state.stage == 'symptoms':
                 quick_symptoms.append("chest pain")
             if st.checkbox("😣 Body Pain"):
                 quick_symptoms.append("body pain")
-        
+
         with col_s3:
             if st.checkbox("😮‍💨 Breathing Issues"):
                 quick_symptoms.append("difficulty breathing")
@@ -369,47 +381,50 @@ elif st.session_state.stage == 'symptoms':
                 quick_symptoms.append("nausea")
             if st.checkbox("😵 Dizziness"):
                 quick_symptoms.append("dizziness")
-        
+
         if quick_symptoms:
             st.info(f"Selected symptoms: {', '.join(quick_symptoms)}")
-            combined_symptoms = symptom_changes + " " + ", ".join(quick_symptoms)
+            combined_symptoms = symptom_changes + \
+                " " + ", ".join(quick_symptoms)
         else:
             combined_symptoms = symptom_changes
-        
+
         st.markdown("---")
-        
+
         col_btn1, col_btn2 = st.columns(2)
-        
+
         with col_btn1:
             if st.button("⬅️ Back"):
                 st.session_state.stage = 'patient_info'
                 st.rerun()
-        
+
         with col_btn2:
             if st.button("Generate Report ➡️"):
                 if combined_symptoms.strip():
                     st.session_state.symptom_changes = combined_symptoms
-                    
+
                     # Generate summary
                     structured_data = {
                         "patient_info": serialize_patient_info(st.session_state.patient_records),
                         "additional_info": st.session_state.additional_info,
                         "symptom_changes": st.session_state.symptom_changes
                     }
-                    
-                    diagnostic_tests = recommend_diagnostic_tests(st.session_state.symptom_changes)
-                    
+
+                    diagnostic_tests = recommend_diagnostic_tests(
+                        st.session_state.symptom_changes)
+
                     st.session_state.final_summary = {
                         "structured_data": structured_data,
                         "diagnostic_tests": diagnostic_tests,
                         "timestamp": datetime.now().isoformat()
                     }
-                    
+
                     st.session_state.stage = 'summary'
                     st.rerun()
                 else:
-                    st.warning("⚠️ Please describe your symptoms before continuing.")
-    
+                    st.warning(
+                        "⚠️ Please describe your symptoms before continuing.")
+
     with col2:
         st.markdown("""
         <div class="info-box">
@@ -425,10 +440,10 @@ elif st.session_state.stage == 'symptoms':
 
 elif st.session_state.stage == 'summary':
     st.title("📊 Health Assessment Summary")
-    
+
     summary = st.session_state.final_summary
     patient_info = summary['structured_data']['patient_info']
-    
+
     # Success message
     st.markdown("""
     <div class="success-box">
@@ -436,52 +451,59 @@ elif st.session_state.stage == 'summary':
     <p>Your health information has been successfully processed and logged in our system.</p>
     </div>
     """, unsafe_allow_html=True)
-    
+
     # Patient Summary
     col1, col2 = st.columns([3, 2])
-    
+
     with col1:
         st.subheader("👤 Patient Information")
         st.markdown(f"**Patient ID:** {st.session_state.patient_id}")
-        st.markdown(f"**Name:** {patient_info.get('Patient Name', 'N/A')}")
-        st.markdown(f"**Age:** {patient_info.get('Age', 'N/A')} | **Gender:** {patient_info.get('Sex', 'N/A')}")
-        
+        st.markdown(f"**Name:** {patient_info.get('Name', 'N/A')}")
+        st.markdown(
+            f"**Age:** {patient_info.get('Age', 'N/A')} | **Gender:** {patient_info.get('Gender', 'N/A')}")
+
         st.markdown("---")
-        
+
         # Symptoms
         st.subheader("🩺 Reported Symptoms")
         st.info(summary['structured_data']['symptom_changes'])
-        
+
         if summary['structured_data']['additional_info']:
             st.subheader("ℹ️ Additional Information")
             st.text(summary['structured_data']['additional_info'])
-    
+
     with col2:
         st.subheader("⏰ Assessment Details")
         timestamp = datetime.fromisoformat(summary['timestamp'])
-        st.metric("Date", timestamp.strftime("%Y-%m-%d"))
-        st.metric("Time", timestamp.strftime("%H:%M:%S"))
-    
+
+        # Create a more compact and elegant timestamp display
+        st.markdown(f"""
+        <div style="background-color: #f0f2f6; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p style="margin: 0; font-size: 14px; color: #666;"><strong>📅 Date:</strong> {timestamp.strftime("%B %d, %Y")}</p>
+            <p style="margin: 5px 0 0 0; font-size: 14px; color: #666;"><strong>🕐 Time:</strong> {timestamp.strftime("%I:%M %p")}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
     st.markdown("---")
-    
+
     # Diagnostic Tests
     st.subheader("🔬 Recommended Diagnostic Tests")
-    
+
     tests = summary['diagnostic_tests']
-    
+
     if tests:
         for i, test in enumerate(tests, 1):
             st.markdown(f"{i}. {test}")
     else:
         st.info("No specific tests recommended at this time. Continue monitoring.")
-    
+
     st.markdown("---")
-    
+
     # Action items
     st.subheader("📋 Next Steps")
-    
+
     col_a, col_b = st.columns(2)
-    
+
     with col_a:
         st.markdown("""
         **Immediate Actions:**
@@ -489,7 +511,7 @@ elif st.session_state.stage == 'summary':
         - Schedule appointments as needed
         - Monitor your symptoms and note any changes
         """)
-    
+
     with col_b:
         st.markdown("""
         **Follow-up:**
@@ -497,12 +519,12 @@ elif st.session_state.stage == 'summary':
         - Report any severe or worsening symptoms immediately
         - Maintain regular communication with your healthcare team
         """)
-    
+
     st.markdown("---")
-    
+
     # Download options
     col_d1, col_d2, col_d3 = st.columns(3)
-    
+
     with col_d1:
         # Export as JSON
         json_data = json.dumps(summary, indent=2)
@@ -512,7 +534,7 @@ elif st.session_state.stage == 'summary':
             file_name=f"health_report_{st.session_state.patient_id}_{datetime.now().strftime('%Y%m%d')}.json",
             mime="application/json"
         )
-    
+
     with col_d2:
         # Export as text
         text_report = f"""
@@ -523,9 +545,9 @@ Patient ID: {st.session_state.patient_id}
 Date: {timestamp.strftime("%Y-%m-%d %H:%M:%S")}
 
 PATIENT INFORMATION:
-Name: {patient_info.get('Patient Name', 'N/A')}
+Name: {patient_info.get('Name', 'N/A')}
 Age: {patient_info.get('Age', 'N/A')}
-Gender: {patient_info.get('Sex', 'N/A')}
+Gender: {patient_info.get('Gender', 'N/A')}
 
 REPORTED SYMPTOMS:
 {summary['structured_data']['symptom_changes']}
@@ -545,13 +567,13 @@ Generated by Health Assistant
             file_name=f"health_report_{st.session_state.patient_id}_{datetime.now().strftime('%Y%m%d')}.txt",
             mime="text/plain"
         )
-    
+
     with col_d3:
         if st.button("🔄 New Assessment"):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
-    
+
     # Footer
     st.markdown("---")
     st.markdown("""
@@ -569,4 +591,3 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
-
