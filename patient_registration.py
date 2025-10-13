@@ -335,10 +335,51 @@ class PatientRegistration:
             if not phone_row.empty:
                 return True, phone_row.iloc[0].to_dict()
 
+            # For demo purposes, check if it's a sample ABHA ID
+            if self._is_sample_abha_id(identifier):
+                return self._get_sample_patient_for_abha(identifier)
+
             return False, None
 
         except Exception as e:
             logger.error(f"Error checking patient existence: {e}")
+            return False, None
+
+    def _is_sample_abha_id(self, abha_id: str) -> bool:
+        """Check if the ABHA ID is one of our sample IDs for testing"""
+        sample_abha_ids = [
+            "12345678901234",
+            "23456789012345", 
+            "34567890123456",
+            "45678901234567",
+            "56789012345678"
+        ]
+        return abha_id in sample_abha_ids
+
+    def _get_sample_patient_for_abha(self, abha_id: str) -> Tuple[bool, Optional[Dict]]:
+        """Get sample patient data for demo ABHA IDs"""
+        try:
+            df = pd.read_excel("Dummy Patient Data for OCR Use Case.xlsx")
+            
+            # Map ABHA IDs to patient indices
+            abha_to_index = {
+                "12345678901234": 0,  # GEN10001
+                "23456789012345": 1,  # GEN10002
+                "34567890123456": 2,  # GEN10003
+                "45678901234567": 3,  # GEN10004
+                "56789012345678": 4,  # GEN10005
+            }
+            
+            if abha_id in abha_to_index and abha_to_index[abha_id] < len(df):
+                patient_data = df.iloc[abha_to_index[abha_id]].to_dict()
+                # Add the ABHA ID to the patient data
+                patient_data['ABHA ID'] = abha_id
+                return True, patient_data
+            
+            return False, None
+            
+        except Exception as e:
+            logger.error(f"Error getting sample patient for ABHA: {e}")
             return False, None
 
     def _check_by_type(self, df: pd.DataFrame, identifier: str, identifier_type: str) -> Tuple[bool, Optional[Dict]]:
@@ -360,6 +401,10 @@ class PatientRegistration:
                     abha_row = df[df['ABHA ID'].astype(str) == str(identifier)]
                     if not abha_row.empty:
                         return True, abha_row.iloc[0].to_dict()
+                
+                # For demo purposes, check if it's a sample ABHA ID
+                if self._is_sample_abha_id(identifier):
+                    return self._get_sample_patient_for_abha(identifier)
             
             elif identifier_type == "email":
                 email_row = df[df['Email'].astype(str) == str(identifier)]
