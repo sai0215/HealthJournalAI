@@ -1926,66 +1926,69 @@ elif st.session_state.stage == 'insights':
             )
             
             if uploaded_file is not None:
-                # File validation
-                file_size = len(uploaded_file.getvalue())
-                max_size = 10 * 1024 * 1024  # 10MB
+                # Check if this is a new upload (not already processed)
+                upload_key = f"{uploaded_file.name}_{document_type}_{uploaded_file.size}"
                 
-                if file_size > max_size:
-                    st.error("❌ File size exceeds 10MB limit. Please upload a smaller file.")
-                else:
-                    # Validate file type based on document category
-                    file_extension = uploaded_file.name.split('.')[-1].lower()
-                    valid_extensions = {
-                        "Medical Reports": ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
-                        "Lab Results": ['pdf', 'jpg', 'jpeg', 'png'],
-                        "Prescriptions": ['pdf', 'jpg', 'jpeg', 'png'],
-                        "Insurance Cards": ['jpg', 'jpeg', 'png', 'pdf'],
-                        "Health ID Cards": ['jpg', 'jpeg', 'png', 'pdf'],
-                        "Vaccination Records": ['pdf', 'jpg', 'jpeg', 'png'],
-                        "Discharge Summaries": ['pdf', 'doc', 'docx'],
-                        "Other": ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
-                    }
+                if 'last_upload_key' not in st.session_state or st.session_state.last_upload_key != upload_key:
+                    # File validation
+                    file_size = len(uploaded_file.getvalue())
+                    max_size = 10 * 1024 * 1024  # 10MB
                     
-                    if file_extension in valid_extensions[document_type]:
-                        # Store document info in session state
-                        if 'uploaded_documents' not in st.session_state:
-                            st.session_state.uploaded_documents = []
-                        
-                        document_info = {
-                            'name': uploaded_file.name,
-                            'type': document_type,
-                            'size': file_size,
-                            'upload_date': datetime.now().strftime('%Y-%m-%d %H:%M'),
-                            'extension': file_extension,
-                            'content': uploaded_file.getvalue()
+                    if file_size > max_size:
+                        st.error("❌ File size exceeds 10MB limit. Please upload a smaller file.")
+                    else:
+                        # Validate file type based on document category
+                        file_extension = uploaded_file.name.split('.')[-1].lower()
+                        valid_extensions = {
+                            "Medical Reports": ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+                            "Lab Results": ['pdf', 'jpg', 'jpeg', 'png'],
+                            "Prescriptions": ['pdf', 'jpg', 'jpeg', 'png'],
+                            "Insurance Cards": ['jpg', 'jpeg', 'png', 'pdf'],
+                            "Health ID Cards": ['jpg', 'jpeg', 'png', 'pdf'],
+                            "Vaccination Records": ['pdf', 'jpg', 'jpeg', 'png'],
+                            "Discharge Summaries": ['pdf', 'doc', 'docx'],
+                            "Other": ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
                         }
                         
-                        st.session_state.uploaded_documents.append(document_info)
-                        
-                        st.success(f"✅ {document_type} uploaded successfully!")
-                        st.info(f"📄 **File:** {uploaded_file.name} | **Size:** {file_size/1024:.1f} KB | **Type:** {document_type}")
-                        
-                        # Special validation for insurance cards
-                        if document_type == "Insurance Cards":
-                            st.markdown("""
-                            <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #28a745;">
-                                <h5 style="margin: 0 0 4px 0; color: #155724; font-size: 14px;">🔍 Insurance Card Validation</h5>
-                                <p style="margin: 0; color: #155724; font-size: 12px;">✅ Card format validated | ✅ Image quality verified | ✅ Ready for processing</p>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        # Special validation for health ID cards
-                        elif document_type == "Health ID Cards":
-                            st.markdown("""
-                            <div style="background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #17a2b8;">
-                                <h5 style="margin: 0 0 4px 0; color: #0c5460; font-size: 14px;">🆔 Health ID Validation</h5>
-                                <p style="margin: 0; color: #0c5460; font-size: 12px;">✅ ID format validated | ✅ QR code detected | ✅ Ready for integration</p>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        st.rerun()
-                    else:
-                        st.error(f"❌ Invalid file type for {document_type}. Please upload a {', '.join(valid_extensions[document_type])} file.")
+                        if file_extension in valid_extensions[document_type]:
+                            # Store document info in session state
+                            if 'uploaded_documents' not in st.session_state:
+                                st.session_state.uploaded_documents = []
+                            
+                            document_info = {
+                                'name': uploaded_file.name,
+                                'type': document_type,
+                                'size': file_size,
+                                'upload_date': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                                'extension': file_extension,
+                                'content': uploaded_file.getvalue()
+                            }
+                            
+                            st.session_state.uploaded_documents.append(document_info)
+                            st.session_state.last_upload_key = upload_key
+                            
+                            st.success(f"✅ {document_type} uploaded successfully!")
+                            st.info(f"📄 **File:** {uploaded_file.name} | **Size:** {file_size/1024:.1f} KB | **Type:** {document_type}")
+                            
+                            # Special validation for insurance cards
+                            if document_type == "Insurance Cards":
+                                st.markdown("""
+                                <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #28a745;">
+                                    <h5 style="margin: 0 0 4px 0; color: #155724; font-size: 14px;">🔍 Insurance Card Validation</h5>
+                                    <p style="margin: 0; color: #155724; font-size: 12px;">✅ Card format validated | ✅ Image quality verified | ✅ Ready for processing</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            # Special validation for health ID cards
+                            elif document_type == "Health ID Cards":
+                                st.markdown("""
+                                <div style="background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #17a2b8;">
+                                    <h5 style="margin: 0 0 4px 0; color: #0c5460; font-size: 14px;">🆔 Health ID Validation</h5>
+                                    <p style="margin: 0; color: #0c5460; font-size: 12px;">✅ ID format validated | ✅ QR code detected | ✅ Ready for integration</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        else:
+                            st.error(f"❌ Invalid file type for {document_type}. Please upload a {', '.join(valid_extensions[document_type])} file.")
         
         with col_upload2:
             st.markdown("""
@@ -2006,12 +2009,34 @@ elif st.session_state.stage == 'insights':
                 
                 col_stat1, col_stat2 = st.columns(2)
                 with col_stat1:
-                    st.metric("📄 Total Documents", total_docs)
-                    st.metric("💾 Total Size", f"{total_size/1024/1024:.1f} MB")
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 12px; border-radius: 6px; margin: 4px 0; border-left: 3px solid #007bff;">
+                        <div style="font-size: 12px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">📄 Total Documents</div>
+                        <div style="font-size: 18px; color: #495057; font-weight: 700;">{total_docs}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 12px; border-radius: 6px; margin: 4px 0; border-left: 3px solid #28a745;">
+                        <div style="font-size: 12px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">💾 Total Size</div>
+                        <div style="font-size: 18px; color: #495057; font-weight: 700;">{total_size/1024/1024:.1f} MB</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 with col_stat2:
-                    st.metric("📅 Latest Upload", "Today" if st.session_state.uploaded_documents else "None")
-                    st.metric("🔒 Security", "Encrypted")
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 12px; border-radius: 6px; margin: 4px 0; border-left: 3px solid #ffc107;">
+                        <div style="font-size: 12px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">📅 Latest Upload</div>
+                        <div style="font-size: 18px; color: #495057; font-weight: 700;">Today</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 12px; border-radius: 6px; margin: 4px 0; border-left: 3px solid #dc3545;">
+                        <div style="font-size: 12px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">🔒 Security</div>
+                        <div style="font-size: 18px; color: #495057; font-weight: 700;">Encrypted</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 # Document type distribution
                 if doc_types:
@@ -2077,9 +2102,8 @@ elif st.session_state.stage == 'insights':
                     
                     with col_doc3:
                         if st.button(f"🗑️ Delete", key=f"delete_{i}"):
-                            st.session_state.uploaded_documents.remove(doc)
-                            st.success(f"✅ {doc['name']} deleted successfully!")
-                            st.rerun()
+                            # Mark document for deletion
+                            st.session_state[f"delete_doc_{i}"] = True
                     
                     # Document viewer
                     if st.session_state.get(f"view_doc_{i}", False):
@@ -2104,6 +2128,20 @@ elif st.session_state.stage == 'insights':
                                 file_name=doc['name'],
                                 mime="application/octet-stream"
                             )
+            
+            # Process deletions after the loop
+            docs_to_delete = []
+            for i, doc in enumerate(filtered_docs):
+                if st.session_state.get(f"delete_doc_{i}", False):
+                    docs_to_delete.append(doc)
+                    # Clear the delete flag
+                    st.session_state[f"delete_doc_{i}"] = False
+            
+            # Remove deleted documents
+            for doc in docs_to_delete:
+                if doc in st.session_state.uploaded_documents:
+                    st.session_state.uploaded_documents.remove(doc)
+                    st.success(f"✅ {doc['name']} deleted successfully!")
     
     # Action buttons
     st.markdown("---")
