@@ -2040,7 +2040,40 @@ Please review the complete dashboard for detailed insights and trends.
                     phone_clean = selected_physician['phone'].replace('+', '').replace('-', '')
                     message_encoded = whatsapp_message.replace(' ', '%20').replace('\n', '%0A')
                     whatsapp_url = f"https://wa.me/{phone_clean}?text={message_encoded}"
-                    st.markdown(f"[📱 Open WhatsApp]({whatsapp_url})")
+                    
+                    # Show success message with preview
+                    st.success("✅ WhatsApp message prepared successfully!")
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); padding: 16px; border-radius: 8px; margin: 12px 0; color: white;">
+                        <h4 style="margin: 0 0 8px 0; color: white; font-size: 16px;">📱 WhatsApp Message Preview</h4>
+                        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 13px;">Message will be sent to: <strong>{selected_physician['name']}</strong></p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Show message preview
+                    with st.expander("👀 Preview Message Content", expanded=True):
+                        st.text_area("Message Preview:", value=whatsapp_message, height=200, disabled=True)
+                    
+                    # WhatsApp button with better styling
+                    st.markdown(f"""
+                    <div style="text-align: center; margin: 16px 0;">
+                        <a href="{whatsapp_url}" target="_blank" style="
+                            display: inline-block;
+                            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 25px;
+                            text-decoration: none;
+                            font-weight: 600;
+                            font-size: 16px;
+                            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" 
+                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'">
+                            📱 Open WhatsApp to Send
+                        </a>
+                    </div>
+                    """, unsafe_allow_html=True)
                     st.success("WhatsApp link generated! Click to share.")
             
             with col_share2:
@@ -2061,8 +2094,41 @@ Please review the complete dashboard for detailed insights and trends.
                     sms_message = f"Health Report - {patient_name} (ID: {patient_id}). Chief Complaint: {chief_complaint}. Health Score: 85/100. Care Gaps: {care_gaps}. Recent symptoms: {st.session_state.get('symptom_changes', 'None')}. Please review dashboard for complete details."
                     
                     sms_url = f"sms:{selected_physician['phone']}?body={sms_message.replace(' ', '%20')}"
-                    st.markdown(f"[💬 Send SMS]({sms_url})")
-                    st.success("SMS link generated! Click to send.")
+                    
+                    # Show success message with preview
+                    st.success("✅ SMS message prepared successfully!")
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); padding: 16px; border-radius: 8px; margin: 12px 0; color: white;">
+                        <h4 style="margin: 0 0 8px 0; color: white; font-size: 16px;">💬 SMS Message Preview</h4>
+                        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 13px;">Message will be sent to: <strong>{selected_physician['name']}</strong></p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Show message preview
+                    with st.expander("👀 Preview SMS Content", expanded=True):
+                        st.text_area("SMS Preview:", value=sms_message, height=100, disabled=True)
+                        st.info(f"📏 Message length: {len(sms_message)} characters")
+                    
+                    # SMS button with better styling
+                    st.markdown(f"""
+                    <div style="text-align: center; margin: 16px 0;">
+                        <a href="{sms_url}" target="_blank" style="
+                            display: inline-block;
+                            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 25px;
+                            text-decoration: none;
+                            font-weight: 600;
+                            font-size: 16px;
+                            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 123, 255, 0.4)'" 
+                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 123, 255, 0.3)'">
+                            💬 Open SMS to Send
+                        </a>
+                    </div>
+                    """, unsafe_allow_html=True)
             
             with col_share3:
                 st.markdown("""
@@ -2121,8 +2187,42 @@ Health Journal System
                     subject_encoded = email_subject.replace(' ', '%20')
                     body_encoded = email_body.replace(' ', '%20').replace('\n', '%0A')
                     email_url = f"mailto:{selected_physician['email']}?subject={subject_encoded}&body={body_encoded}"
-                    st.markdown(f"[📧 Send Email]({email_url})")
-                    st.success("Email link generated! Click to send.")
+                    
+                    # Show success message with preview
+                    st.success("✅ Email prepared successfully!")
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); padding: 16px; border-radius: 8px; margin: 12px 0; color: white;">
+                        <h4 style="margin: 0 0 8px 0; color: white; font-size: 16px;">📧 Email Preview</h4>
+                        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 13px;">Email will be sent to: <strong>{selected_physician['email']}</strong></p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Show email preview
+                    with st.expander("👀 Preview Email Content", expanded=True):
+                        st.text_input("Subject:", value=email_subject, disabled=True)
+                        st.text_area("Email Body:", value=email_body, height=300, disabled=True)
+                        st.info(f"📧 Email will be sent to: {selected_physician['email']}")
+                    
+                    # Email button with better styling
+                    st.markdown(f"""
+                    <div style="text-align: center; margin: 16px 0;">
+                        <a href="{email_url}" target="_blank" style="
+                            display: inline-block;
+                            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 25px;
+                            text-decoration: none;
+                            font-weight: 600;
+                            font-size: 16px;
+                            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(220, 53, 69, 0.4)'" 
+                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(220, 53, 69, 0.3)'">
+                            📧 Open Email Client
+                        </a>
+                    </div>
+                    """, unsafe_allow_html=True)
             
             # Close modal button
             st.markdown("---")
@@ -2131,6 +2231,14 @@ Health Journal System
                 if st.button("❌ Close", key="close_share_modal"):
                     st.session_state.show_share_modal = False
                     st.rerun()
+            
+            # Additional sharing options
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #6c757d;">
+                <h4 style="margin: 0 0 8px 0; color: #495057; font-size: 16px; font-weight: 600;">💡 Additional Sharing Options</h4>
+                <p style="margin: 0; color: #6c757d; font-size: 13px;">You can also copy the message content and share it through other platforms like Teams, Slack, or any other communication tool.</p>
+            </div>
+            """, unsafe_allow_html=True)
 
 elif st.session_state.stage == 'summary':
     st.title("📊 Health Assessment Summary")
