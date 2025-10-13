@@ -433,39 +433,39 @@ if st.session_state.stage == 'welcome':
                     "ABHA ID",
                     placeholder="Enter your 14-digit ABHA ID",
                     help="Enter your Ayushman Bharat Health Account ID"
-                )
+        )
 
-            col_btn1, col_btn2 = st.columns(2)
+        col_btn1, col_btn2 = st.columns(2)
 
-            with col_btn1:
-                if st.button("Continue ➡️"):
-                    if identifier_input:
-                        # Check if patient exists
-                        # For patient_id method, use auto-detection to check both Patient ID and MRN
-                        if st.session_state.auth_method == 'patient_id':
-                            exists, patient_data_found = patient_registration.check_patient_exists(
-                                identifier_input, 'auto')
-                        else:
-                            exists, patient_data_found = patient_registration.check_patient_exists(
-                                identifier_input, st.session_state.auth_method)
-                        
-                        if exists:
-                            st.session_state.patient_id = patient_data_found.get('Patient ID')
-                            st.session_state.patient_records = patient_data_found
-                            # For returning patients, show medical history reconciliation
-                            st.session_state.stage = 'reconciliation'
-                            st.rerun()
-                        else:
-                            st.error("❌ Patient not found. Please register as a new patient.")
-                            st.session_state.show_registration = True
-                            st.rerun()
+        with col_btn1:
+            if st.button("Continue ➡️"):
+                if identifier_input:
+                    # Check if patient exists
+                    # For patient_id method, use auto-detection to check both Patient ID and MRN
+                    if st.session_state.auth_method == 'patient_id':
+                        exists, patient_data_found = patient_registration.check_patient_exists(
+                            identifier_input, 'auto')
                     else:
-                        st.warning("⚠️ Please enter your identifier to continue.")
+                        exists, patient_data_found = patient_registration.check_patient_exists(
+                            identifier_input, st.session_state.auth_method)
+                        
+                    if exists:
+                        st.session_state.patient_id = patient_data_found.get('Patient ID')
+                        st.session_state.patient_records = patient_data_found
+                        # For returning patients, show medical history reconciliation
+                        st.session_state.stage = 'reconciliation'
+                        st.rerun()
+                    else:
+                        st.error("❌ Patient not found. Please register as a new patient.")
+                        st.session_state.show_registration = True
+                        st.rerun()
+                else:
+                    st.warning("⚠️ Please enter your identifier to continue.")
 
-            with col_btn2:
-                if st.button("🆕 New Patient Registration"):
-                    st.session_state.show_registration = True
-                    st.rerun()
+        with col_btn2:
+            if st.button("🆕 New Patient Registration"):
+                st.session_state.show_registration = True
+                st.rerun()
 
     # Show registration form if requested
     if st.session_state.show_registration:
@@ -819,7 +819,7 @@ elif st.session_state.stage == 'patient_info':
         <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                 <div>
-                    <h4 style="margin: 0; color: #1976d2; font-size: 16px;">🆔 Patient ID: {st.session_state.patient_id}</h4>
+            <h4 style="margin: 0; color: #1976d2; font-size: 16px;">🆔 Patient ID: {st.session_state.patient_id}</h4>
                 </div>
                 <div>
                     <h4 style="margin: 0; color: #1976d2; font-size: 16px;">📋 MRN: {mrn}</h4>
@@ -1064,7 +1064,7 @@ elif st.session_state.stage == 'patient_info':
                             st.rerun()
 
         st.markdown("---")
-        
+
         if st.button("Continue to Symptoms ➡️"):
             st.session_state.stage = 'symptoms'
             st.rerun()
@@ -1196,35 +1196,68 @@ elif st.session_state.stage == 'symptoms':
         """, unsafe_allow_html=True)
 
 elif st.session_state.stage == 'insights':
-    st.title("📊 Patient 360 Insights Dashboard")
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 16px;">
+        <h2 style="margin: 0; color: #495057; font-size: 20px; font-weight: 600;">📊 Patient 360 Insights Dashboard</h2>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Patient header
     col_header1, col_header2, col_header3 = st.columns([2, 1, 1])
     with col_header1:
+        # Calculate age from DOB if available
+        dob = st.session_state.patient_records.get('DOB')
+        age = 'N/A'
+        if pd.notna(dob) and dob:
+            if isinstance(dob, str):
+                dob = datetime.strptime(dob, '%Y-%m-%d')
+            age = datetime.now().year - dob.year
+        
         st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; margin-bottom: 20px;">
-            <h2 style="margin: 0; color: white;">👤 {st.session_state.patient_records.get('Patient Name', 'Patient')}</h2>
-            <p style="margin: 5px 0 0 0; opacity: 0.9;">Patient ID: {st.session_state.patient_id} | Age: {st.session_state.patient_records.get('Age', 'N/A')} | Gender: {st.session_state.patient_records.get('Gender', 'N/A')}</p>
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px; border-radius: 6px; color: white; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; color: white; font-size: 16px; font-weight: 600;">👤 {st.session_state.patient_records.get('Name', st.session_state.patient_records.get('Patient Name', 'Patient'))}</h3>
+            <p style="margin: 2px 0 0 0; opacity: 0.9; font-size: 12px;">Patient ID: {st.session_state.patient_id} | Age: {age} | Gender: {st.session_state.patient_records.get('Gender', 'N/A')}</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col_header2:
-        st.metric("🩺 Health Score", "85", "↑ 5%")
+        st.markdown("""
+        <div style="text-align: center; padding: 8px; background-color: #f8f9fa; border-radius: 6px; margin-bottom: 12px;">
+            <div style="font-size: 12px; color: #6c757d; margin-bottom: 2px;">🩺 Health Score</div>
+            <div style="font-size: 18px; font-weight: 600; color: #28a745;">85</div>
+            <div style="font-size: 10px; color: #28a745;">↑ 5%</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col_header3:
-        st.metric("📅 Last Visit", "2 days ago", "↓ 1 day")
+        st.markdown("""
+        <div style="text-align: center; padding: 8px; background-color: #f8f9fa; border-radius: 6px; margin-bottom: 12px;">
+            <div style="font-size: 12px; color: #6c757d; margin-bottom: 2px;">📅 Last Visit</div>
+            <div style="font-size: 14px; font-weight: 600; color: #495057;">2 days ago</div>
+            <div style="font-size: 10px; color: #dc3545;">↓ 1 day</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Dashboard tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏥 Medical Overview", "💊 Medications", "⚠️ Allergies & Risks", "📈 Trends & Analytics", "🔍 Detailed Analysis"])
     
     with tab1:
-        st.subheader("🏥 Medical Overview")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+            <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">🏥 Medical Overview</h3>
+            <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 13px;">Comprehensive view of patient's medical conditions and procedures</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Medical conditions widget
         col_med1, col_med2 = st.columns([2, 1])
         
         with col_med1:
-            st.markdown("### 📋 Medical Conditions")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">📋 Medical Conditions</h4>
+            </div>
+            """, unsafe_allow_html=True)
             conditions = st.session_state.patient_records.get('Past Medical History', '')
             if conditions and conditions != 'No significant medical history':
                 conditions_list = [c.strip() for c in conditions.split(';') if c.strip()]
@@ -1244,22 +1277,28 @@ elif st.session_state.stage == 'insights':
                 # Condition status pie chart
                 status_counts = df_conditions['Status'].value_counts()
                 fig_status = px.pie(values=status_counts.values, names=status_counts.index, 
-                                  title="Condition Status Distribution",
+                                  title="Status Distribution",
                                   color_discrete_sequence=px.colors.qualitative.Set3)
+                fig_status.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_status, use_container_width=True)
                 
                 # Condition severity bar chart
                 severity_counts = df_conditions['Severity'].value_counts()
                 fig_severity = px.bar(x=severity_counts.index, y=severity_counts.values,
-                                    title="Condition Severity Distribution",
+                                    title="Severity Distribution",
                                     color=severity_counts.values,
                                     color_continuous_scale="RdYlGn_r")
+                fig_severity.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_severity, use_container_width=True)
             else:
                 st.info("No significant medical conditions recorded")
         
         with col_med2:
-            st.markdown("### 🔬 Recent Procedures")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">🔬 Recent Procedures</h4>
+            </div>
+            """, unsafe_allow_html=True)
             procedures = st.session_state.patient_records.get('Recent Procedures', '')
             if procedures and procedures != 'No recent procedures':
                 procedures_list = [p.strip() for p in procedures.split(';') if p.strip()]
@@ -1280,19 +1319,29 @@ elif st.session_state.stage == 'insights':
                 
                 # Procedure timeline
                 fig_timeline = px.timeline(df_procedures, x_start='Date', x_end='Date', y='Procedure',
-                                         color='Type', title="Procedure Timeline",
+                                         color='Type', title="Timeline",
                                          color_discrete_sequence=px.colors.qualitative.Pastel)
+                fig_timeline.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_timeline, use_container_width=True)
             else:
                 st.info("No recent procedures recorded")
     
     with tab2:
-        st.subheader("💊 Medication Management")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+            <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">💊 Medication Management</h3>
+            <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 13px;">Track medication adherence, interactions, and effectiveness</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         col_med_tab1, col_med_tab2 = st.columns([1, 1])
         
         with col_med_tab1:
-            st.markdown("### 💊 Current Medications")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">💊 Current Medications</h4>
+            </div>
+            """, unsafe_allow_html=True)
             medications = st.session_state.patient_records.get('Current Medications', '')
             if medications and medications != 'No current medications':
                 medications_list = [m.strip() for m in medications.split(';') if m.strip()]
@@ -1316,10 +1365,11 @@ elif st.session_state.stage == 'insights':
                     mode = "gauge+number+delta",
                     value = avg_adherence,
                     domain = {'x': [0, 1], 'y': [0, 1]},
-                    title = {'text': "Average Adherence Rate (%)"},
-                    delta = {'reference': 80},
+                    title = {'text': "Adherence Rate (%)", 'font': {'size': 12}},
+                    delta = {'reference': 80, 'font': {'size': 8}},
+                    number = {'font': {'size': 16}},
                     gauge = {
-                        'axis': {'range': [None, 100]},
+                        'axis': {'range': [None, 100], 'tickfont': {'size': 10}},
                         'bar': {'color': "darkblue"},
                         'steps': [
                             {'range': [0, 50], 'color': "lightgray"},
@@ -1333,10 +1383,15 @@ elif st.session_state.stage == 'insights':
                         }
                     }
                 ))
+                fig_gauge.update_layout(font_size=10, height=300)
                 st.plotly_chart(fig_gauge, use_container_width=True)
                 
                 # Medication list with details
-                st.markdown("#### Current Medication Details")
+                st.markdown("""
+                <div style="background-color: #ffffff; padding: 0px; border-radius: 2px; margin-bottom: 0px;">
+                    <h5 style="margin: 0 0 0px 0; color: #495057; font-size: 14px; font-weight: 600;">Current Medication Details</h5>
+                </div>
+                """, unsafe_allow_html=True)
                 for _, med in df_medications.iterrows():
                     with st.expander(f"💊 {med['Medication']} - {med['Dosage']}"):
                         st.write(f"**Frequency:** {med['Frequency']}")
@@ -1349,14 +1404,19 @@ elif st.session_state.stage == 'insights':
                         adherence_trend = np.clip(adherence_trend, 0, 100)
                         
                         fig_trend = px.line(x=dates, y=adherence_trend, 
-                                          title=f"{med['Medication']} Adherence Trend",
+                                          title=f"{med['Medication']} Trend",
                                           labels={'x': 'Date', 'y': 'Adherence %'})
+                        fig_trend.update_layout(title_font_size=12, font_size=11)
                         st.plotly_chart(fig_trend, use_container_width=True)
             else:
                 st.info("No current medications recorded")
         
         with col_med_tab2:
-            st.markdown("### 📊 Medication Analytics")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">📊 Medication Analytics</h4>
+            </div>
+            """, unsafe_allow_html=True)
             if medications and medications != 'No current medications':
                 # Drug interaction risk
                 interaction_risk = np.random.choice(['Low', 'Medium', 'High'], p=[0.7, 0.2, 0.1])
@@ -1365,10 +1425,10 @@ elif st.session_state.stage == 'insights':
                 st.markdown(f"""
                 <div style="background-color: {risk_color[interaction_risk].replace('green', '#d4edda').replace('orange', '#fff3cd').replace('red', '#f8d7da')}; 
                             border: 1px solid {risk_color[interaction_risk].replace('green', '#c3e6cb').replace('orange', '#ffeaa7').replace('red', '#f5c6cb')}; 
-                            padding: 15px; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0; color: {risk_color[interaction_risk].replace('green', '#155724').replace('orange', '#856404').replace('red', '#721c24')};">
+                            padding: 12px; border-radius: 6px; margin: 8px 0;">
+                    <p style="margin: 0; color: {risk_color[interaction_risk].replace('green', '#155724').replace('orange', '#856404').replace('red', '#721c24')}; font-size: 14px; font-weight: 600;">
                         🔍 Drug Interaction Risk: {interaction_risk}
-                    </h4>
+                    </p>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -1380,16 +1440,26 @@ elif st.session_state.stage == 'insights':
                                       x=['Effectiveness', 'Tolerability', 'Convenience', 'Cost'],
                                       y=med_names,
                                       color_continuous_scale='RdYlGn',
-                                      title="Medication Effectiveness Matrix")
+                                      title="Effectiveness Matrix")
+                fig_heatmap.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_heatmap, use_container_width=True)
     
     with tab3:
-        st.subheader("⚠️ Allergies & Risk Assessment")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc3545;">
+            <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">⚠️ Allergies & Risk Assessment</h3>
+            <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 13px;">Monitor allergies and assess health risks for better care planning</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         col_allergy1, col_allergy2 = st.columns([1, 1])
         
         with col_allergy1:
-            st.markdown("### ⚠️ Known Allergies")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">⚠️ Known Allergies</h4>
+            </div>
+            """, unsafe_allow_html=True)
             allergies = st.session_state.patient_records.get('Drug Allergies', '')
             if allergies and allergies != 'No known drug allergies':
                 allergies_list = [a.strip() for a in allergies.split(';') if a.strip()]
@@ -1409,9 +1479,10 @@ elif st.session_state.stage == 'insights':
                 # Allergy severity distribution
                 severity_counts = df_allergies['Severity'].value_counts()
                 fig_allergy = px.bar(x=severity_counts.index, y=severity_counts.values,
-                                   title="Allergy Severity Distribution",
+                                   title="Severity Distribution",
                                    color=severity_counts.values,
                                    color_continuous_scale="Reds")
+                fig_allergy.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_allergy, use_container_width=True)
                 
                 # Allergy type pie chart
@@ -1419,12 +1490,17 @@ elif st.session_state.stage == 'insights':
                 fig_type = px.pie(values=type_counts.values, names=type_counts.index,
                                 title="Allergy Types",
                                 color_discrete_sequence=px.colors.qualitative.Set2)
+                fig_type.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_type, use_container_width=True)
             else:
                 st.info("No known allergies recorded")
         
         with col_allergy2:
-            st.markdown("### 🚨 Risk Assessment")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">🚨 Risk Assessment</h4>
+            </div>
+            """, unsafe_allow_html=True)
             
             # Risk factors
             risk_factors = {
@@ -1454,7 +1530,9 @@ elif st.session_state.stage == 'insights':
                         range=[0, 100]
                     )),
                 showlegend=True,
-                title="Risk Assessment Radar"
+                title="Risk Factors",
+                title_font_size=14,
+                font_size=12
             )
             
             st.plotly_chart(fig_radar, use_container_width=True)
@@ -1467,7 +1545,12 @@ elif st.session_state.stage == 'insights':
                 st.success("✅ All risk factors are within acceptable ranges")
     
     with tab4:
-        st.subheader("📈 Trends & Analytics")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #17a2b8;">
+            <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">📈 Trends & Analytics</h3>
+            <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 13px;">Analyze health trends and visit patterns over time</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Generate time series data for trends
         dates = pd.date_range(start=datetime.now() - timedelta(days=90), end=datetime.now(), freq='D')
@@ -1475,7 +1558,11 @@ elif st.session_state.stage == 'insights':
         col_trend1, col_trend2 = st.columns([1, 1])
         
         with col_trend1:
-            st.markdown("### 📊 Health Metrics Trends")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">📊 Health Metrics Trends</h4>
+            </div>
+            """, unsafe_allow_html=True)
             
             # Simulate health metrics
             weight_trend = 70 + np.cumsum(np.random.normal(0, 0.1, len(dates)))
@@ -1486,7 +1573,7 @@ elif st.session_state.stage == 'insights':
             fig_health = make_subplots(
                 rows=2, cols=1,
                 subplot_titles=('Weight Trend', 'Blood Pressure'),
-                vertical_spacing=0.1
+                vertical_spacing=0.15
             )
             
             fig_health.add_trace(
@@ -1504,11 +1591,15 @@ elif st.session_state.stage == 'insights':
                 row=2, col=1
             )
             
-            fig_health.update_layout(height=600, title_text="Health Metrics Over Time")
+            fig_health.update_layout(height=600, title_text="Health Metrics Over Time", title_font_size=14, font_size=12)
             st.plotly_chart(fig_health, use_container_width=True)
         
         with col_trend2:
-            st.markdown("### 📅 Visit Frequency")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">📅 Visit Frequency</h4>
+            </div>
+            """, unsafe_allow_html=True)
             
             # Visit frequency data
             visit_data = []
@@ -1526,29 +1617,44 @@ elif st.session_state.stage == 'insights':
             
             # Visit frequency chart
             fig_visits = px.bar(df_visits, x='Month', y='Visits',
-                              title="Monthly Visit Frequency",
+                              title="Monthly Visits",
                               color='Visits',
                               color_continuous_scale='Blues')
+            fig_visits.update_layout(title_font_size=14, font_size=12)
             st.plotly_chart(fig_visits, use_container_width=True)
             
             # Symptom severity over time
-            st.markdown("#### 📈 Symptom Severity Trend")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 0px; border-radius: 2px; margin-bottom: 0px;">
+                <h5 style="margin: 0 0 0px 0; color: #495057; font-size: 14px; font-weight: 600;">📈 Symptom Severity Trend</h5>
+            </div>
+            """, unsafe_allow_html=True)
             symptom_severity = np.random.normal(3, 1, len(dates))
             symptom_severity = np.clip(symptom_severity, 1, 10)
             
             fig_symptoms = px.line(x=dates, y=symptom_severity,
-                                 title="Symptom Severity Over Time (1-10 scale)",
+                                 title="Symptom Severity (1-10 scale)",
                                  labels={'x': 'Date', 'y': 'Severity'})
             fig_symptoms.add_hline(y=5, line_dash="dash", line_color="red", 
                                  annotation_text="Moderate Threshold")
+            fig_symptoms.update_layout(title_font_size=14, font_size=12)
             st.plotly_chart(fig_symptoms, use_container_width=True)
     
     with tab5:
-        st.subheader("🔍 Detailed Analysis")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #6f42c1;">
+            <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">🔍 Detailed Analysis</h3>
+            <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 13px;">Comprehensive analysis of symptoms and health summary</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Current symptoms analysis
         if hasattr(st.session_state, 'symptom_changes') and st.session_state.symptom_changes:
-            st.markdown("### 🩺 Current Symptoms Analysis")
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">🩺 Current Symptoms Analysis</h4>
+            </div>
+            """, unsafe_allow_html=True)
             
             symptoms_text = st.session_state.symptom_changes.lower()
             
@@ -1566,6 +1672,7 @@ elif st.session_state.stage == 'insights':
                                             title="Detected Symptoms",
                                             color=list(symptom_counts.values()),
                                             color_continuous_scale="Reds")
+                    fig_symptom_freq.update_layout(title_font_size=14, font_size=12)
                     st.plotly_chart(fig_symptom_freq, use_container_width=True)
                 
                 with col_analysis2:
@@ -1573,13 +1680,18 @@ elif st.session_state.stage == 'insights':
                     severity_scores = {symptom: np.random.randint(3, 8) for symptom in detected_symptoms}
                     
                     fig_severity = px.bar(x=list(severity_scores.keys()), y=list(severity_scores.values()),
-                                        title="Symptom Severity Assessment",
+                                        title="Severity Assessment",
                                         color=list(severity_scores.values()),
                                         color_continuous_scale="RdYlGn_r")
+                    fig_severity.update_layout(title_font_size=14, font_size=12)
                     st.plotly_chart(fig_severity, use_container_width=True)
         
         # Comprehensive health summary
-        st.markdown("### 📋 Comprehensive Health Summary")
+        st.markdown("""
+        <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+            <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">📋 Comprehensive Health Summary</h4>
+        </div>
+        """, unsafe_allow_html=True)
         
         col_summary1, col_summary2, col_summary3 = st.columns(3)
         
