@@ -1424,6 +1424,44 @@ elif st.session_state.stage == 'insights':
                         st.plotly_chart(fig_trend, use_container_width=True)
             else:
                 st.info("No current medications recorded")
+            
+            # Past Medications (Expandable section)
+            past_medications_list = ['Lisinopril', 'Metformin', 'Aspirin', 'Vitamin D', 'Omega-3']
+            if past_medications_list:
+                with st.expander("📚 View Past Medications", expanded=False):
+                    st.markdown("""
+                    <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+                        <h5 style="margin: 0; color: #495057; font-size: 14px; font-weight: 600;">📚 Past Medications</h5>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Past medication data
+                    past_med_data = []
+                    for med in past_medications_list:
+                        past_med_data.append({
+                            'Medication': med,
+                            'Dosage': f"{np.random.randint(1, 10)}mg",
+                            'Frequency': np.random.choice(['Once daily', 'Twice daily', 'As needed']),
+                            'Status': 'Discontinued',
+                            'Discontinued Date': f"2023-{np.random.randint(1,13):02d}-{np.random.randint(1,29):02d}",
+                            'Reason': np.random.choice(['Side effects', 'No longer needed', 'Switched to alternative', 'Completed course'])
+                        })
+                    
+                    df_past_medications = pd.DataFrame(past_med_data)
+                    
+                    # Past medications list
+                    st.markdown("**Historical Medications:**")
+                    for _, med in df_past_medications.iterrows():
+                        st.markdown(f"• {med['Medication']} ({med['Dosage']}) - {med['Frequency']} - Discontinued: {med['Discontinued Date']} - Reason: {med['Reason']}")
+                    
+                    # Past medication summary chart
+                    past_reason_counts = df_past_medications['Reason'].value_counts()
+                    fig_past_reasons = px.bar(x=past_reason_counts.index, y=past_reason_counts.values,
+                                            title="Past Medication Discontinuation Reasons",
+                                            color=past_reason_counts.values,
+                                            color_continuous_scale="Blues")
+                    fig_past_reasons.update_layout(title_font_size=14, font_size=12)
+                    st.plotly_chart(fig_past_reasons, use_container_width=True)
         
         with col_med_tab2:
             st.markdown("""
@@ -1469,45 +1507,93 @@ elif st.session_state.stage == 'insights':
         col_allergy1, col_allergy2 = st.columns([1, 1])
         
         with col_allergy1:
+            # Current Allergies (from Drug Allergies field)
             st.markdown("""
             <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
-                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">⚠️ Known Allergies</h4>
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">⚠️ Current Allergies</h4>
             </div>
             """, unsafe_allow_html=True)
-            allergies = st.session_state.patient_records.get('Drug Allergies', '')
-            allergies_list = safe_parse_field(allergies)
-            if allergies_list and allergies != 'No known drug allergies':
-                
-                # Allergy severity and type
-                allergy_data = []
-                for allergy in allergies_list:
-                    allergy_data.append({
+            
+            current_allergies = st.session_state.patient_records.get('Drug Allergies', '')
+            current_allergies_list = safe_parse_field(current_allergies)
+            
+            if current_allergies_list and current_allergies != 'No known drug allergies':
+                # Current allergy data
+                current_allergy_data = []
+                for allergy in current_allergies_list:
+                    current_allergy_data.append({
                         'Allergen': allergy,
                         'Type': np.random.choice(['Drug', 'Food', 'Environmental']),
                         'Severity': np.random.choice(['Mild', 'Moderate', 'Severe'], p=[0.3, 0.4, 0.3]),
-                        'Reaction': np.random.choice(['Rash', 'Swelling', 'Anaphylaxis', 'Nausea'])
+                        'Reaction': np.random.choice(['Rash', 'Swelling', 'Anaphylaxis', 'Nausea']),
+                        'Status': 'Current'
                     })
                 
-                df_allergies = pd.DataFrame(allergy_data)
+                df_current_allergies = pd.DataFrame(current_allergy_data)
                 
-                # Allergy severity distribution
-                severity_counts = df_allergies['Severity'].value_counts()
+                # Current allergy severity distribution
+                severity_counts = df_current_allergies['Severity'].value_counts()
                 fig_allergy = px.bar(x=severity_counts.index, y=severity_counts.values,
-                                   title="Severity Distribution",
+                                   title="Current Allergy Severity",
                                    color=severity_counts.values,
                                    color_continuous_scale="Reds")
                 fig_allergy.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_allergy, use_container_width=True)
                 
-                # Allergy type pie chart
-                type_counts = df_allergies['Type'].value_counts()
+                # Current allergy type pie chart
+                type_counts = df_current_allergies['Type'].value_counts()
                 fig_type = px.pie(values=type_counts.values, names=type_counts.index,
-                                title="Allergy Types",
+                                title="Current Allergy Types",
                                 color_discrete_sequence=px.colors.qualitative.Set2)
                 fig_type.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_type, use_container_width=True)
+                
+                # Current allergies list
+                st.markdown("**Current Known Allergies:**")
+                for _, row in df_current_allergies.iterrows():
+                    severity_color = {'Mild': '🟢', 'Moderate': '🟡', 'Severe': '🔴'}
+                    st.markdown(f"• {row['Allergen']} ({row['Type']}) - {severity_color[row['Severity']]} {row['Severity']}")
             else:
-                st.info("No known allergies recorded")
+                st.info("No current allergies recorded")
+            
+            # Past Allergies (Expandable section)
+            past_allergies_list = ['Penicillin', 'Latex', 'Dust Mites', 'Pollen']
+            if past_allergies_list:
+                with st.expander("📚 View Past Allergies", expanded=False):
+                    st.markdown("""
+                    <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+                        <h5 style="margin: 0; color: #495057; font-size: 14px; font-weight: 600;">📚 Past Allergies</h5>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Past allergy data
+                    past_allergy_data = []
+                    for allergy in past_allergies_list:
+                        past_allergy_data.append({
+                            'Allergen': allergy,
+                            'Type': np.random.choice(['Drug', 'Food', 'Environmental']),
+                            'Severity': np.random.choice(['Mild', 'Moderate', 'Severe']),
+                            'Reaction': np.random.choice(['Rash', 'Swelling', 'Anaphylaxis', 'Nausea']),
+                            'Status': 'Past',
+                            'Resolved Date': f"2023-{np.random.randint(1,13):02d}-{np.random.randint(1,29):02d}"
+                        })
+                    
+                    df_past_allergies = pd.DataFrame(past_allergy_data)
+                    
+                    # Past allergies list
+                    st.markdown("**Historical Allergies:**")
+                    for _, row in df_past_allergies.iterrows():
+                        severity_color = {'Mild': '🟢', 'Moderate': '🟡', 'Severe': '🔴'}
+                        st.markdown(f"• {row['Allergen']} ({row['Type']}) - {severity_color[row['Severity']]} {row['Severity']} - Resolved: {row['Resolved Date']}")
+                    
+                    # Past allergy summary chart
+                    past_type_counts = df_past_allergies['Type'].value_counts()
+                    fig_past_type = px.bar(x=past_type_counts.index, y=past_type_counts.values,
+                                         title="Past Allergy Types",
+                                         color=past_type_counts.values,
+                                         color_continuous_scale="Blues")
+                    fig_past_type.update_layout(title_font_size=14, font_size=12)
+                    st.plotly_chart(fig_past_type, use_container_width=True)
         
         with col_allergy2:
             st.markdown("""
