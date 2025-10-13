@@ -1196,6 +1196,20 @@ elif st.session_state.stage == 'symptoms':
         """, unsafe_allow_html=True)
 
 elif st.session_state.stage == 'insights':
+    # Helper function to safely parse semicolon-separated fields
+    def safe_parse_field(field_value, default_value=''):
+        """Safely parse a field that might be a string, float, or None"""
+        if field_value is None or field_value == '' or str(field_value).lower() in ['nan', 'none', 'n/a']:
+            return []
+        
+        # Convert to string and handle float values
+        field_str = str(field_value)
+        if field_str.lower() in ['nan', 'none', 'n/a']:
+            return []
+        
+        # Split and clean the list
+        return [item.strip() for item in field_str.split(';') if item.strip() and item.strip().lower() not in ['nan', 'none', 'n/a']]
+
     st.markdown("""
     <div style="text-align: center; margin-bottom: 16px;">
         <h2 style="margin: 0; color: #495057; font-size: 20px; font-weight: 600;">📊 Patient 360 Insights Dashboard</h2>
@@ -1239,7 +1253,7 @@ elif st.session_state.stage == 'insights':
         """, unsafe_allow_html=True)
     
     # Dashboard tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏥 Medical Overview", "💊 Medications", "⚠️ Allergies & Risks", "📈 Trends & Analytics", "🔍 Detailed Analysis"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏥 Medical Overview", "💊 Medications", "⚠️ Allergies & Risks", "📈 Trends & Analytics", "🔍 Detailed Analysis", "📋 Clinical Notes & Care Plan"])
     
     with tab1:
         st.markdown("""
@@ -1259,8 +1273,8 @@ elif st.session_state.stage == 'insights':
             </div>
             """, unsafe_allow_html=True)
             conditions = st.session_state.patient_records.get('Past Medical History', '')
-            if conditions and conditions != 'No significant medical history':
-                conditions_list = [c.strip() for c in conditions.split(';') if c.strip()]
+            conditions_list = safe_parse_field(conditions)
+            if conditions_list and conditions != 'No significant medical history':
                 
                 # Create condition severity chart
                 condition_data = []
@@ -1300,8 +1314,8 @@ elif st.session_state.stage == 'insights':
             </div>
             """, unsafe_allow_html=True)
             procedures = st.session_state.patient_records.get('Recent Procedures', '')
-            if procedures and procedures != 'No recent procedures':
-                procedures_list = [p.strip() for p in procedures.split(';') if p.strip()]
+            procedures_list = safe_parse_field(procedures)
+            if procedures_list and procedures != 'No recent procedures':
                 
                 # Procedure timeline
                 procedure_data = []
@@ -1343,8 +1357,8 @@ elif st.session_state.stage == 'insights':
             </div>
             """, unsafe_allow_html=True)
             medications = st.session_state.patient_records.get('Current Medications', '')
-            if medications and medications != 'No current medications':
-                medications_list = [m.strip() for m in medications.split(';') if m.strip()]
+            medications_list = safe_parse_field(medications)
+            if medications_list and medications != 'No current medications':
                 
                 # Medication adherence simulation
                 med_data = []
@@ -1433,7 +1447,7 @@ elif st.session_state.stage == 'insights':
                 """, unsafe_allow_html=True)
                 
                 # Medication effectiveness heatmap
-                med_names = [m.strip() for m in medications.split(';') if m.strip()]
+                med_names = safe_parse_field(medications)
                 effectiveness_data = np.random.rand(len(med_names), 4)
                 
                 fig_heatmap = px.imshow(effectiveness_data,
@@ -1461,8 +1475,8 @@ elif st.session_state.stage == 'insights':
             </div>
             """, unsafe_allow_html=True)
             allergies = st.session_state.patient_records.get('Drug Allergies', '')
-            if allergies and allergies != 'No known drug allergies':
-                allergies_list = [a.strip() for a in allergies.split(';') if a.strip()]
+            allergies_list = safe_parse_field(allergies)
+            if allergies_list and allergies != 'No known drug allergies':
                 
                 # Allergy severity and type
                 allergy_data = []
@@ -1707,6 +1721,93 @@ elif st.session_state.stage == 'insights':
             st.metric("📅 Days Since Last Visit", np.random.randint(1, 30))
             st.metric("🎯 Health Score", "85/100", "↑ 5")
     
+    with tab6:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+            <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">📋 Clinical Notes & Care Plan</h3>
+            <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 13px;">Clinical documentation, care gaps, and treatment plans</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Chief Complaint
+        chief_complaint = st.session_state.patient_records.get('Chief Complaint', '')
+        if chief_complaint and chief_complaint != '' and chief_complaint != 'N/A':
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">🩺 Chief Complaint</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            st.info(f"**Primary Concern:** {chief_complaint}")
+        
+        # Physical Exam Findings
+        physical_exam = st.session_state.patient_records.get('Physical Exam Findings', '')
+        if physical_exam and physical_exam != '' and physical_exam != 'N/A':
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">🔍 Physical Exam Findings</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            st.info(f"**Examination Results:** {physical_exam}")
+        
+        # Care Gaps
+        care_gaps = st.session_state.patient_records.get('Care Gaps', '')
+        if care_gaps and care_gaps != '' and care_gaps != 'N/A':
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">⚠️ Care Gaps</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            st.warning(f"**Identified Gaps:** {care_gaps}")
+        
+        # Treatment Plan
+        treatment_plan = st.session_state.patient_records.get('Treatment Plan', '')
+        if treatment_plan and treatment_plan != '' and treatment_plan != 'N/A':
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">💊 Treatment Plan</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            st.success(f"**Current Plan:** {treatment_plan}")
+        
+        # Next Appointments
+        next_appointments = st.session_state.patient_records.get('Next Appointments', '')
+        if next_appointments and next_appointments != '' and next_appointments != 'N/A':
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">📅 Next Appointments</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            st.info(f"**Scheduled:** {next_appointments}")
+        
+        # Healthcare Team
+        col_team1, col_team2 = st.columns(2)
+        
+        with col_team1:
+            primary_care = st.session_state.patient_records.get('Primary Care Provider', '')
+            if primary_care and primary_care != '' and primary_care != 'N/A':
+                st.markdown("""
+                <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                    <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">👨‍⚕️ Primary Care Provider</h4>
+                </div>
+                """, unsafe_allow_html=True)
+                # Check if "Dr." is already present
+                display_name = primary_care if primary_care.startswith('Dr.') else f"Dr. {primary_care}"
+                st.success(f"**{display_name}**")
+        
+        with col_team2:
+            specialists = st.session_state.patient_records.get('Specialists', '')
+            specialist_list = safe_parse_field(specialists)
+            if specialist_list and specialists != '' and specialists != 'N/A':
+                st.markdown("""
+                <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                    <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">🏥 Specialists</h4>
+                </div>
+                """, unsafe_allow_html=True)
+                for specialist in specialist_list:
+                    # Check if "Dr." is already present
+                    display_name = specialist if specialist.startswith('Dr.') else f"Dr. {specialist}"
+                    st.info(f"**{display_name}**")
+    
     # Action buttons
     st.markdown("---")
     col_action1, col_action2, col_action3, col_action4 = st.columns(4)
@@ -1743,14 +1844,44 @@ elif st.session_state.stage == 'insights':
         # Physician Selection
         st.subheader("👨‍⚕️ Select Physician")
         
-        # Sample physician data - in real app, this would come from database
-        physicians = [
-            {"name": "Dr. Sarah Johnson", "specialty": "Internal Medicine", "phone": "+1-555-0101", "email": "sarah.johnson@hospital.com"},
-            {"name": "Dr. Michael Chen", "specialty": "Cardiology", "phone": "+1-555-0102", "email": "michael.chen@hospital.com"},
-            {"name": "Dr. Emily Rodriguez", "specialty": "Endocrinology", "phone": "+1-555-0103", "email": "emily.rodriguez@hospital.com"},
-            {"name": "Dr. James Wilson", "specialty": "Family Medicine", "phone": "+1-555-0104", "email": "james.wilson@hospital.com"},
-            {"name": "Dr. Lisa Thompson", "specialty": "Neurology", "phone": "+1-555-0105", "email": "lisa.thompson@hospital.com"}
-        ]
+        # Get physician data from patient records
+        physicians = []
+        
+        # Add Primary Care Provider if available
+        primary_care = st.session_state.patient_records.get('Primary Care Provider', '')
+        if primary_care and primary_care != '' and primary_care != 'N/A':
+            # Clean the name for email generation
+            clean_name = primary_care.replace('Dr.', '').strip()
+            physicians.append({
+                "name": primary_care,
+                "specialty": "Primary Care",
+                "phone": "+1-555-0100",
+                "email": f"{clean_name.lower().replace(' ', '.')}@hospital.com"
+            })
+        
+        # Add Specialists if available
+        specialists = st.session_state.patient_records.get('Specialists', '')
+        specialist_list = safe_parse_field(specialists)
+        if specialist_list and specialists != '' and specialists != 'N/A':
+            for i, specialist in enumerate(specialist_list):
+                # Clean the name for email generation
+                clean_name = specialist.replace('Dr.', '').strip()
+                physicians.append({
+                    "name": specialist,
+                    "specialty": "Specialist",
+                    "phone": f"+1-555-010{i+1}",
+                    "email": f"{clean_name.lower().replace(' ', '.')}@hospital.com"
+                })
+        
+        # Add default physicians if none found in patient records
+        if not physicians:
+            physicians = [
+                {"name": "Dr. Sarah Johnson", "specialty": "Internal Medicine", "phone": "+1-555-0101", "email": "sarah.johnson@hospital.com"},
+                {"name": "Dr. Michael Chen", "specialty": "Cardiology", "phone": "+1-555-0102", "email": "michael.chen@hospital.com"},
+                {"name": "Dr. Emily Rodriguez", "specialty": "Endocrinology", "phone": "+1-555-0103", "email": "emily.rodriguez@hospital.com"},
+                {"name": "Dr. James Wilson", "specialty": "Family Medicine", "phone": "+1-555-0104", "email": "james.wilson@hospital.com"},
+                {"name": "Dr. Lisa Thompson", "specialty": "Neurology", "phone": "+1-555-0105", "email": "lisa.thompson@hospital.com"}
+            ]
         
         # Physician selection options
         physician_options = [f"{doc['name']} - {doc['specialty']}" for doc in physicians]
@@ -1781,25 +1912,43 @@ elif st.session_state.stage == 'insights':
                 """, unsafe_allow_html=True)
                 
                 if st.button("📱 Share via WhatsApp", key="whatsapp_share"):
-                    # Generate WhatsApp message
+                    # Generate comprehensive WhatsApp message
                     patient_name = st.session_state.patient_records.get('Name', 'Patient')
                     patient_id = st.session_state.patient_id
+                    
+                    # Get comprehensive data from patient records
+                    chief_complaint = st.session_state.patient_records.get('Chief Complaint', 'None reported')
+                    physical_exam = st.session_state.patient_records.get('Physical Exam Findings', 'None recorded')
+                    care_gaps = st.session_state.patient_records.get('Care Gaps', 'None identified')
+                    treatment_plan = st.session_state.patient_records.get('Treatment Plan', 'None documented')
+                    next_appointments = st.session_state.patient_records.get('Next Appointments', 'None scheduled')
+                    
                     whatsapp_message = f"""
-🏥 *Health Insights Report*
+🏥 *Comprehensive Health Report*
 
-*Patient:* {patient_name}
-*Patient ID:* {patient_id}
-*Date:* {datetime.now().strftime('%Y-%m-%d %H:%M')}
+*Patient Information:*
+• Name: {patient_name}
+• Patient ID: {patient_id}
+• Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
-*Health Summary:*
+*Current Health Status:*
 • Health Score: 85/100
-• Last Visit: 2 days ago
-• Active Medications: {len(st.session_state.patient_records.get('Current Medications', '').split(';')) if st.session_state.patient_records.get('Current Medications') else 0}
-• Known Allergies: {len(st.session_state.patient_records.get('Drug Allergies', '').split(';')) if st.session_state.patient_records.get('Drug Allergies') else 0}
+• Chief Complaint: {chief_complaint}
+• Physical Exam: {physical_exam}
+
+*Medical Summary:*
+• Active Medications: {len(safe_parse_field(st.session_state.patient_records.get('Current Medications', '')))}
+• Known Allergies: {len(safe_parse_field(st.session_state.patient_records.get('Drug Allergies', '')))}
+• Medical Conditions: {len(safe_parse_field(st.session_state.patient_records.get('Past Medical History', '')))}
+
+*Care Management:*
+• Care Gaps: {care_gaps}
+• Treatment Plan: {treatment_plan}
+• Next Appointments: {next_appointments}
 
 *Recent Symptoms:* {st.session_state.get('symptom_changes', 'None reported')}
 
-Please review the complete dashboard for detailed insights.
+Please review the complete dashboard for detailed insights and trends.
                     """.strip()
                     
                     phone_clean = selected_physician['phone'].replace('+', '').replace('-', '')
@@ -1817,10 +1966,13 @@ Please review the complete dashboard for detailed insights.
                 """, unsafe_allow_html=True)
                 
                 if st.button("💬 Send SMS", key="sms_share"):
-                    # Generate SMS message
+                    # Generate comprehensive SMS message
                     patient_name = st.session_state.patient_records.get('Name', 'Patient')
                     patient_id = st.session_state.patient_id
-                    sms_message = f"Health Insights Report for {patient_name} (ID: {patient_id}). Health Score: 85/100. Recent symptoms: {st.session_state.get('symptom_changes', 'None')}. Please review dashboard for details."
+                    chief_complaint = st.session_state.patient_records.get('Chief Complaint', 'None reported')
+                    care_gaps = st.session_state.patient_records.get('Care Gaps', 'None identified')
+                    
+                    sms_message = f"Health Report - {patient_name} (ID: {patient_id}). Chief Complaint: {chief_complaint}. Health Score: 85/100. Care Gaps: {care_gaps}. Recent symptoms: {st.session_state.get('symptom_changes', 'None')}. Please review dashboard for complete details."
                     
                     sms_url = f"sms:{selected_physician['phone']}?body={sms_message.replace(' ', '%20')}"
                     st.markdown(f"[💬 Send SMS]({sms_url})")
@@ -1839,25 +1991,42 @@ Please review the complete dashboard for detailed insights.
                     patient_name = st.session_state.patient_records.get('Name', 'Patient')
                     patient_id = st.session_state.patient_id
                     email_subject = f"Health Insights Report - {patient_name} (ID: {patient_id})"
+                    # Get comprehensive data from patient records
+                    chief_complaint = st.session_state.patient_records.get('Chief Complaint', 'None reported')
+                    physical_exam = st.session_state.patient_records.get('Physical Exam Findings', 'None recorded')
+                    care_gaps = st.session_state.patient_records.get('Care Gaps', 'None identified')
+                    treatment_plan = st.session_state.patient_records.get('Treatment Plan', 'None documented')
+                    next_appointments = st.session_state.patient_records.get('Next Appointments', 'None scheduled')
+                    
                     email_body = f"""
 Dear Dr. {selected_physician['name'].split()[-1]},
 
-Please find below the health insights report for your patient:
+Please find below the comprehensive health insights report for your patient:
 
-Patient Information:
+PATIENT INFORMATION:
 - Name: {patient_name}
 - Patient ID: {patient_id}
 - Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
-Health Summary:
+CLINICAL ASSESSMENT:
+- Chief Complaint: {chief_complaint}
+- Physical Exam Findings: {physical_exam}
 - Health Score: 85/100
 - Last Visit: 2 days ago
-- Active Medications: {len(st.session_state.patient_records.get('Current Medications', '').split(';')) if st.session_state.patient_records.get('Current Medications') else 0}
-- Known Allergies: {len(st.session_state.patient_records.get('Drug Allergies', '').split(';')) if st.session_state.patient_records.get('Drug Allergies') else 0}
 
-Recent Symptoms: {st.session_state.get('symptom_changes', 'None reported')}
+MEDICAL SUMMARY:
+- Active Medications: {len(safe_parse_field(st.session_state.patient_records.get('Current Medications', '')))}
+- Known Allergies: {len(safe_parse_field(st.session_state.patient_records.get('Drug Allergies', '')))}
+- Medical Conditions: {len(safe_parse_field(st.session_state.patient_records.get('Past Medical History', '')))}
 
-Please review the complete dashboard for detailed insights and trends.
+CARE MANAGEMENT:
+- Care Gaps: {care_gaps}
+- Treatment Plan: {treatment_plan}
+- Next Appointments: {next_appointments}
+
+RECENT SYMPTOMS: {st.session_state.get('symptom_changes', 'None reported')}
+
+Please review the complete dashboard for detailed insights, trends, and comprehensive analytics.
 
 Best regards,
 Health Journal System

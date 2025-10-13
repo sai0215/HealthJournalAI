@@ -127,3 +127,4 @@
 3. **Proceed to Patient Info** → Show standard information
 
 Both options lead to the same patient information screen, but with different levels of medical data richness.
+
