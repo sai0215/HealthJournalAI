@@ -339,6 +339,10 @@ class PatientRegistration:
             if self._is_sample_abha_id(identifier):
                 return self._get_sample_patient_for_abha(identifier)
 
+            # For demo purposes, check if it's a sample MRN
+            if self._is_sample_mrn(identifier):
+                return self._get_sample_patient_for_mrn(identifier)
+
             return False, None
 
         except Exception as e:
@@ -382,6 +386,43 @@ class PatientRegistration:
             logger.error(f"Error getting sample patient for ABHA: {e}")
             return False, None
 
+    def _is_sample_mrn(self, mrn: str) -> bool:
+        """Check if the MRN is one of our sample MRNs for testing"""
+        sample_mrns = [
+            "MRN20250101ABC123",
+            "MRN20250101DEF456", 
+            "MRN20250101GHI789",
+            "MRN20250101JKL012",
+            "MRN20250101MNO345"
+        ]
+        return mrn in sample_mrns
+
+    def _get_sample_patient_for_mrn(self, mrn: str) -> Tuple[bool, Optional[Dict]]:
+        """Get sample patient data for demo MRNs"""
+        try:
+            df = pd.read_excel("Dummy Patient Data for OCR Use Case.xlsx")
+            
+            # Map MRNs to patient indices
+            mrn_to_index = {
+                "MRN20250101ABC123": 0,  # GEN10001
+                "MRN20250101DEF456": 1,  # GEN10002
+                "MRN20250101GHI789": 2,  # GEN10003
+                "MRN20250101JKL012": 3,  # GEN10004
+                "MRN20250101MNO345": 4,  # GEN10005
+            }
+            
+            if mrn in mrn_to_index and mrn_to_index[mrn] < len(df):
+                patient_data = df.iloc[mrn_to_index[mrn]].to_dict()
+                # Add the MRN to the patient data
+                patient_data['MRN'] = mrn
+                return True, patient_data
+            
+            return False, None
+            
+        except Exception as e:
+            logger.error(f"Error getting sample patient for MRN: {e}")
+            return False, None
+
     def _check_by_type(self, df: pd.DataFrame, identifier: str, identifier_type: str) -> Tuple[bool, Optional[Dict]]:
         """Check patient by specific identifier type"""
         try:
@@ -395,6 +436,10 @@ class PatientRegistration:
                     mrn_row = df[df['MRN'].astype(str) == str(identifier)]
                     if not mrn_row.empty:
                         return True, mrn_row.iloc[0].to_dict()
+                
+                # For demo purposes, check if it's a sample MRN
+                if self._is_sample_mrn(identifier):
+                    return self._get_sample_patient_for_mrn(identifier)
             
             elif identifier_type == "abha":
                 if 'ABHA ID' in df.columns:

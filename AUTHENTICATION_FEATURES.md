@@ -79,12 +79,16 @@ class PatientRegistration:
 
 1. **Select Authentication Method**: Choose from Patient ID/UHID/MRN, ABHA ID, or Phone Number
 2. **Enter Identifier**: Provide the appropriate identifier
-3. **OTP Process** (for phone authentication):
+3. **Demo Identifiers** (for testing):
+   - **Patient ID/UHID/MRN**: `GEN10001`, `GEN10002`, `GEN10003`, `GEN10004`, `GEN10005`
+   - **ABHA ID**: `12345678901234`, `23456789012345`, `34567890123456`, `45678901234567`, `56789012345678`
+   - **MRN**: `MRN20250101ABC123`, `MRN20250101DEF456`, `MRN20250101GHI789`, `MRN20250101JKL012`, `MRN20250101MNO345`
+4. **OTP Process** (for phone authentication):
    - Enter phone number
    - Click "Send OTP"
    - Enter the constant OTP: **123456**
    - Click "Verify OTP"
-4. **Access Records**: Once authenticated, access patient records and health assessment
+5. **Access Records**: Once authenticated, access patient records and health assessment
 
 ### For Administrators
 
