@@ -160,32 +160,48 @@ def _update_patient_with_reconciled_data(patient_records, medical_history):
     """Update patient records with reconciled medical history data"""
     updated_records = patient_records.copy()
     
+    # Helper function to clean and merge data
+    def clean_and_merge_data(existing_field, new_data, field_name):
+        """Clean existing data and merge with new data"""
+        # Clean existing data - remove NaN, None, empty strings
+        if pd.isna(existing_field) or existing_field in ['None', '', 'nan', 'NaN']:
+            existing_field = ''
+        
+        # Clean new data
+        new_data_clean = [item for item in new_data if item and str(item).lower() not in ['nan', 'none', '']]
+        
+        if new_data_clean:
+            new_data_str = ', '.join(new_data_clean)
+            if existing_field and existing_field.strip():
+                return f"{existing_field}; {new_data_str}"
+            else:
+                return new_data_str
+        else:
+            return existing_field if existing_field else ''
+    
     # Update medical conditions
     if medical_history.get('conditions'):
-        existing_conditions = updated_records.get('Past Medical History', '')
-        new_conditions = ', '.join(medical_history['conditions'])
-        if existing_conditions:
-            updated_records['Past Medical History'] = f"{existing_conditions}; {new_conditions}"
-        else:
-            updated_records['Past Medical History'] = new_conditions
+        updated_records['Past Medical History'] = clean_and_merge_data(
+            updated_records.get('Past Medical History', ''), 
+            medical_history['conditions'], 
+            'conditions'
+        )
     
     # Update medications
     if medical_history.get('medications'):
-        existing_medications = updated_records.get('Current Medications', '')
-        new_medications = ', '.join(medical_history['medications'])
-        if existing_medications:
-            updated_records['Current Medications'] = f"{existing_medications}; {new_medications}"
-        else:
-            updated_records['Current Medications'] = new_medications
+        updated_records['Current Medications'] = clean_and_merge_data(
+            updated_records.get('Current Medications', ''), 
+            medical_history['medications'], 
+            'medications'
+        )
     
     # Update allergies
     if medical_history.get('allergies'):
-        existing_allergies = updated_records.get('Drug Allergies', '')
-        new_allergies = ', '.join(medical_history['allergies'])
-        if existing_allergies:
-            updated_records['Drug Allergies'] = f"{existing_allergies}; {new_allergies}"
-        else:
-            updated_records['Drug Allergies'] = new_allergies
+        updated_records['Drug Allergies'] = clean_and_merge_data(
+            updated_records.get('Drug Allergies', ''), 
+            medical_history['allergies'], 
+            'allergies'
+        )
     
     # Add reconciliation metadata
     updated_records['Medical History Reconciled'] = 'Yes'
@@ -632,13 +648,17 @@ elif st.session_state.stage == 'reconciliation':
         st.session_state.consent_given = consent_given
         
         if consent_given:
-            # Collect medical history
-            with st.spinner("Collecting medical history from all sources..."):
-                medical_history = medical_reconciliation.collect_medical_history(
-                    st.session_state.patient_id, [s['source_id'] for s in sources])
-            
-            # Store medical history in session state for later use
-            st.session_state.reconciled_medical_history = medical_history
+            # Collect medical history only once
+            if 'reconciled_medical_history' not in st.session_state:
+                with st.spinner("Collecting medical history from all sources..."):
+                    medical_history = medical_reconciliation.collect_medical_history(
+                        st.session_state.patient_id, [s['source_id'] for s in sources])
+                
+                # Store medical history in session state for later use
+                st.session_state.reconciled_medical_history = medical_history
+            else:
+                # Use existing medical history
+                medical_history = st.session_state.reconciled_medical_history
             
             # Show duplicates if any
             if medical_history.get('duplicates'):
@@ -652,7 +672,7 @@ elif st.session_state.stage == 'reconciliation':
                 </div>
                 """, unsafe_allow_html=True)
                 
-                for duplicate in medical_history['duplicates']:
+                for i, duplicate in enumerate(medical_history['duplicates']):
                     st.write(f"**{duplicate['type'].title()}:** {duplicate['value']} (found in {duplicate['count']} hospitals)")
                     st.write(f"**Sources:** {', '.join(duplicate['sources'])}")
                     
@@ -660,18 +680,33 @@ elif st.session_state.stage == 'reconciliation':
                     confirm = st.radio(
                         f"Keep {duplicate['value']} from:",
                         duplicate['sources'],
-                        key=f"duplicate_{duplicate['type']}_{duplicate['value']}"
+                        key=f"duplicate_{duplicate['type']}_{duplicate['value']}_{i}"
                     )
                     
-                    st.session_state.duplicate_confirmations.append({
-                        'type': duplicate['type'],
-                        'value': duplicate['value'],
-                        'confirmed_source': confirm
-                    })
+                    # Update or add confirmation
+                    confirmation_key = f"{duplicate['type']}_{duplicate['value']}"
+                    confirmation_exists = False
+                    
+                    for j, existing_conf in enumerate(st.session_state.duplicate_confirmations):
+                        if existing_conf['type'] == duplicate['type'] and existing_conf['value'] == duplicate['value']:
+                            st.session_state.duplicate_confirmations[j]['confirmed_source'] = confirm
+                            confirmation_exists = True
+                            break
+                    
+                    if not confirmation_exists:
+                        st.session_state.duplicate_confirmations.append({
+                            'type': duplicate['type'],
+                            'value': duplicate['value'],
+                            'confirmed_source': confirm
+                        })
             
             # Show collected medical history summary
             st.markdown("---")
             st.subheader("📋 Collected Medical History Summary")
+            
+            # Show duplicate confirmations if any
+            if st.session_state.duplicate_confirmations:
+                st.info("ℹ️ **Note:** Duplicate items will be resolved based on your selections above.")
             
             col_sum1, col_sum2 = st.columns(2)
             with col_sum1:
@@ -711,9 +746,13 @@ elif st.session_state.stage == 'reconciliation':
                         if result['success']:
                             st.success("✅ Medical history reconciliation completed!")
                             
-                            # Update patient records with reconciled medical history
+                            # Create final reconciled history based on duplicate confirmations
+                            final_medical_history = medical_reconciliation.create_final_reconciled_history(
+                                medical_history, st.session_state.duplicate_confirmations)
+                            
+                            # Update patient records with final reconciled medical history
                             st.session_state.patient_records = _update_patient_with_reconciled_data(
-                                st.session_state.patient_records, medical_history)
+                                st.session_state.patient_records, final_medical_history)
                             
                             st.session_state.stage = 'patient_info'
                             st.rerun()
@@ -838,20 +877,41 @@ elif st.session_state.stage == 'patient_info':
         reconciled = patient_records.get('Medical History Reconciled', 'No')
         reconciliation_sources = patient_records.get('Reconciliation Sources', '')
 
-        # Clean up the data
-        if pd.isna(allergies) or allergies == 'None' or allergies == '':
+        # Clean up the data - remove NaN values and clean up strings
+        def clean_medical_data(data):
+            """Clean medical data by removing NaN and unwanted values"""
+            if pd.isna(data) or data in ['None', '', 'nan', 'NaN', 'nan;']:
+                return ''
+            
+            # Convert to string and clean up
+            data_str = str(data)
+            
+            # Remove common unwanted patterns
+            data_str = data_str.replace('nan;', '').replace('NaN;', '').replace('None;', '')
+            data_str = data_str.replace('; ;', ';').replace(';;', ';')
+            data_str = data_str.strip('; ').strip()
+            
+            return data_str
+
+        # Clean the data
+        allergies = clean_medical_data(allergies)
+        history = clean_medical_data(history)
+        medications = clean_medical_data(medications)
+
+        # Set display values and status
+        if not allergies:
             allergies = 'No known drug allergies'
             allergy_status = 'success'
         else:
             allergy_status = 'warning'
 
-        if pd.isna(history) or history == 'None' or history == '':
+        if not history:
             history = 'No significant medical history'
             history_status = 'success'
         else:
             history_status = 'info'
             
-        if pd.isna(medications) or medications == 'None' or medications == '':
+        if not medications:
             medications = 'No current medications'
             medication_status = 'success'
         else:
