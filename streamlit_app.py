@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from patient_registration import PatientRegistration, get_registration_form_data, validate_abha_id_format
 from std_hub.db.mongodb import db_client
 from otp_service import get_otp_service
+from medical_history_reconciliation import get_medical_reconciliation
 
 # Load environment variables
 load_dotenv()
@@ -155,6 +156,45 @@ def recommend_diagnostic_tests(symptoms):
     return recommendations if recommendations else ["General health screening recommended"]
 
 
+def _update_patient_with_reconciled_data(patient_records, medical_history):
+    """Update patient records with reconciled medical history data"""
+    updated_records = patient_records.copy()
+    
+    # Update medical conditions
+    if medical_history.get('conditions'):
+        existing_conditions = updated_records.get('Past Medical History', '')
+        new_conditions = ', '.join(medical_history['conditions'])
+        if existing_conditions:
+            updated_records['Past Medical History'] = f"{existing_conditions}; {new_conditions}"
+        else:
+            updated_records['Past Medical History'] = new_conditions
+    
+    # Update medications
+    if medical_history.get('medications'):
+        existing_medications = updated_records.get('Current Medications', '')
+        new_medications = ', '.join(medical_history['medications'])
+        if existing_medications:
+            updated_records['Current Medications'] = f"{existing_medications}; {new_medications}"
+        else:
+            updated_records['Current Medications'] = new_medications
+    
+    # Update allergies
+    if medical_history.get('allergies'):
+        existing_allergies = updated_records.get('Drug Allergies', '')
+        new_allergies = ', '.join(medical_history['allergies'])
+        if existing_allergies:
+            updated_records['Drug Allergies'] = f"{existing_allergies}; {new_allergies}"
+        else:
+            updated_records['Drug Allergies'] = new_allergies
+    
+    # Add reconciliation metadata
+    updated_records['Medical History Reconciled'] = 'Yes'
+    updated_records['Reconciliation Date'] = medical_history.get('collection_date', '')
+    updated_records['Reconciliation Sources'] = ', '.join([s['hospital_name'] for s in medical_history.get('sources', [])])
+    
+    return updated_records
+
+
 # Initialize session state
 if 'stage' not in st.session_state:
     st.session_state.stage = 'welcome'
@@ -178,14 +218,23 @@ if 'otp_verified' not in st.session_state:
     st.session_state.otp_verified = False
 if 'otp_phone' not in st.session_state:
     st.session_state.otp_phone = None
+if 'show_reconciliation' not in st.session_state:
+    st.session_state.show_reconciliation = False
+if 'medical_sources' not in st.session_state:
+    st.session_state.medical_sources = None
+if 'consent_given' not in st.session_state:
+    st.session_state.consent_given = False
+if 'duplicate_confirmations' not in st.session_state:
+    st.session_state.duplicate_confirmations = []
 
 # Load data
 project = initialize_project()
 patient_data = load_patient_data()
 
-# Initialize patient registration system and OTP service
+# Initialize patient registration system, OTP service, and medical reconciliation
 patient_registration = PatientRegistration(db_client)
 otp_service = get_otp_service()
+medical_reconciliation = get_medical_reconciliation()
 
 # Sidebar
 with st.sidebar:
@@ -196,6 +245,7 @@ with st.sidebar:
     stages = {
         'welcome': '1️⃣ Patient ID',
         'registration': '🆕 Registration',
+        'reconciliation': '🔄 Medical History',
         'patient_info': '2️⃣ Health Info',
         'symptoms': '3️⃣ Symptoms',
         'summary': '4️⃣ Summary'
@@ -219,6 +269,10 @@ with st.sidebar:
         st.session_state.auth_method = 'patient_id'
         st.session_state.otp_verified = False
         st.session_state.otp_phone = None
+        st.session_state.show_reconciliation = False
+        st.session_state.medical_sources = None
+        st.session_state.consent_given = False
+        st.session_state.duplicate_confirmations = []
         st.rerun()
 
 # Main content
@@ -330,7 +384,8 @@ if st.session_state.stage == 'welcome':
                                 if exists:
                                     st.session_state.patient_id = patient_data_found.get('Patient ID')
                                     st.session_state.patient_records = patient_data_found
-                                    st.session_state.stage = 'patient_info'
+                                    # For returning patients, show medical history reconciliation
+                                    st.session_state.stage = 'reconciliation'
                                     st.rerun()
                                 else:
                                     st.error("❌ No patient record found for this phone number. Please register as a new patient.")
@@ -375,7 +430,8 @@ if st.session_state.stage == 'welcome':
                         if exists:
                             st.session_state.patient_id = patient_data_found.get('Patient ID')
                             st.session_state.patient_records = patient_data_found
-                            st.session_state.stage = 'patient_info'
+                            # For returning patients, show medical history reconciliation
+                            st.session_state.stage = 'reconciliation'
                             st.rerun()
                         else:
                             st.error("❌ Patient not found. Please register as a new patient.")
@@ -508,6 +564,202 @@ if st.session_state.stage == 'welcome':
                             st.error(
                                 f"❌ Registration failed: {response.get('error', 'Unknown error')}")
 
+elif st.session_state.stage == 'reconciliation':
+    st.title("🔄 Medical History Reconciliation")
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.markdown(f"""
+        <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <h4 style="margin: 0; color: #1976d2; font-size: 16px;">🆔 Patient ID: {st.session_state.patient_id}</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Get medical sources for this patient
+        if not st.session_state.medical_sources:
+            with st.spinner("Checking for medical records across hospitals..."):
+                st.session_state.medical_sources = medical_reconciliation.get_patient_medical_sources(
+                    st.session_state.patient_id)
+        
+        sources = st.session_state.medical_sources
+        
+        st.markdown("""
+        <div class="info-box">
+        <h4>📋 Medical History Collection</h4>
+        <p>We found your medical records at the following healthcare providers. 
+        To provide you with comprehensive care, we need your consent to collect and reconcile 
+        your medical history from these sources.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display hospital sources
+        st.subheader("🏥 Healthcare Providers with Your Records")
+        
+        for i, source in enumerate(sources):
+            with st.expander(f"🏥 {source['name']} - {source['location']}", expanded=True):
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    st.write(f"**Location:** {source['location']}")
+                    st.write(f"**Last Visit:** {source['last_visit']}")
+                with col_b:
+                    st.write(f"**Records:** {source['records_count']} medical records")
+                    st.write(f"**Status:** ✅ Records Available")
+        
+        # Consent form
+        st.markdown("---")
+        st.subheader("📝 Consent for Medical History Collection")
+        
+        consent_data = medical_reconciliation.get_consent_form_data(
+            st.session_state.patient_id, sources)
+        
+        st.markdown(f"""
+        <div class="warning-box">
+        <h4>🔒 Data Collection Consent</h4>
+        <p><strong>Purpose:</strong> {consent_data['purpose']}</p>
+        <p><strong>Data Sources:</strong> {', '.join(consent_data['data_sources'])}</p>
+        <p><strong>Data Types:</strong> {', '.join(consent_data['data_types'])}</p>
+        <p><strong>Consent Period:</strong> {consent_data['consent_period']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Consent checkbox
+        consent_given = st.checkbox(
+            "I consent to the collection and reconciliation of my medical history from the above healthcare providers",
+            value=st.session_state.consent_given
+        )
+        
+        st.session_state.consent_given = consent_given
+        
+        if consent_given:
+            # Collect medical history
+            with st.spinner("Collecting medical history from all sources..."):
+                medical_history = medical_reconciliation.collect_medical_history(
+                    st.session_state.patient_id, [s['source_id'] for s in sources])
+            
+            # Store medical history in session state for later use
+            st.session_state.reconciled_medical_history = medical_history
+            
+            # Show duplicates if any
+            if medical_history.get('duplicates'):
+                st.markdown("---")
+                st.subheader("⚠️ Duplicate Records Detected")
+                
+                st.markdown("""
+                <div class="warning-box">
+                <p>We found some duplicate medical records across different hospitals. 
+                Please confirm which records you want to keep.</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                for duplicate in medical_history['duplicates']:
+                    st.write(f"**{duplicate['type'].title()}:** {duplicate['value']} (found in {duplicate['count']} hospitals)")
+                    st.write(f"**Sources:** {', '.join(duplicate['sources'])}")
+                    
+                    # Confirmation for each duplicate
+                    confirm = st.radio(
+                        f"Keep {duplicate['value']} from:",
+                        duplicate['sources'],
+                        key=f"duplicate_{duplicate['type']}_{duplicate['value']}"
+                    )
+                    
+                    st.session_state.duplicate_confirmations.append({
+                        'type': duplicate['type'],
+                        'value': duplicate['value'],
+                        'confirmed_source': confirm
+                    })
+            
+            # Show collected medical history summary
+            st.markdown("---")
+            st.subheader("📋 Collected Medical History Summary")
+            
+            col_sum1, col_sum2 = st.columns(2)
+            with col_sum1:
+                st.write(f"**Conditions:** {len(medical_history['conditions'])}")
+                if medical_history['conditions']:
+                    for condition in medical_history['conditions']:
+                        st.write(f"• {condition}")
+                
+                st.write(f"**Medications:** {len(medical_history['medications'])}")
+                if medical_history['medications']:
+                    for medication in medical_history['medications']:
+                        st.write(f"• {medication}")
+            
+            with col_sum2:
+                st.write(f"**Procedures:** {len(medical_history['procedures'])}")
+                if medical_history['procedures']:
+                    for procedure in medical_history['procedures']:
+                        st.write(f"• {procedure}")
+                
+                st.write(f"**Allergies:** {len(medical_history['allergies'])}")
+                if medical_history['allergies']:
+                    for allergy in medical_history['allergies']:
+                        st.write(f"• {allergy}")
+            
+            # Action buttons
+            col_btn1, col_btn2 = st.columns(2)
+            
+            with col_btn1:
+                if st.button("🔄 Reconcile Medical History"):
+                    if consent_given:
+                        result = medical_reconciliation.process_consent_response(
+                            st.session_state.patient_id, 
+                            consent_given, 
+                            st.session_state.duplicate_confirmations
+                        )
+                        
+                        if result['success']:
+                            st.success("✅ Medical history reconciliation completed!")
+                            
+                            # Update patient records with reconciled medical history
+                            st.session_state.patient_records = _update_patient_with_reconciled_data(
+                                st.session_state.patient_records, medical_history)
+                            
+                            st.session_state.stage = 'patient_info'
+                            st.rerun()
+                        else:
+                            st.error(f"❌ {result['message']}")
+                    else:
+                        st.warning("⚠️ Please provide consent to proceed")
+            
+            with col_btn2:
+                if st.button("⏭️ Skip Reconciliation"):
+                    st.info("ℹ️ Skipping medical history reconciliation. You can reconcile later.")
+                    st.session_state.stage = 'patient_info'
+                    st.rerun()
+        
+        else:
+            st.warning("⚠️ Consent is required to reconcile your medical history")
+    
+    with col2:
+        st.markdown("""
+        <div class="info-box">
+        <h4>🔄 Why Reconcile Medical History?</h4>
+        <ul>
+            <li><strong>Complete Picture:</strong> Get a comprehensive view of your health</li>
+            <li><strong>Better Care:</strong> Help doctors make informed decisions</li>
+            <li><strong>Medication Safety:</strong> Avoid drug interactions</li>
+            <li><strong>Continuity:</strong> Seamless care across providers</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="info-box">
+        <h4>🔒 Your Privacy Rights</h4>
+        <ul>
+            <li>Right to access your records</li>
+            <li>Right to request corrections</li>
+            <li>Right to withdraw consent</li>
+            <li>Right to data portability</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("⬅️ Back"):
+            st.session_state.stage = 'welcome'
+            st.rerun()
+
 elif st.session_state.stage == 'patient_info':
     st.title("📋 Patient Information Review")
 
@@ -580,6 +832,11 @@ elif st.session_state.stage == 'patient_info':
         # Get medical history data
         allergies = patient_records.get('Drug Allergies', 'None')
         history = patient_records.get('Past Medical History', 'None')
+        medications = patient_records.get('Current Medications', 'None')
+        
+        # Check if medical history was reconciled
+        reconciled = patient_records.get('Medical History Reconciled', 'No')
+        reconciliation_sources = patient_records.get('Reconciliation Sources', '')
 
         # Clean up the data
         if pd.isna(allergies) or allergies == 'None' or allergies == '':
@@ -593,6 +850,21 @@ elif st.session_state.stage == 'patient_info':
             history_status = 'success'
         else:
             history_status = 'info'
+            
+        if pd.isna(medications) or medications == 'None' or medications == '':
+            medications = 'No current medications'
+            medication_status = 'success'
+        else:
+            medication_status = 'info'
+
+        # Show reconciliation status if applicable
+        if reconciled == 'Yes':
+            st.markdown(f"""
+            <div style="background-color: #d4edda; border: 1px solid #c3e6cb; padding: 10px; border-radius: 6px; margin: 10px 0;">
+                <h4 style="margin: 0; color: #155724; font-size: 14px;">🔄 Medical History Reconciled</h4>
+                <p style="margin: 5px 0 0 0; color: #155724; font-size: 12px;">Data collected from: {reconciliation_sources}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
         # Create elegant medical history display with appealing background
         st.markdown(f"""
@@ -605,6 +877,10 @@ elif st.session_state.stage == 'patient_info':
                 <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #17a2b8; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">📋 Past Medical History</h4>
                     <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{history}</p>
+                </div>
+                <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #6f42c1; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">💊 Current Medications</h4>
+                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{medications}</p>
                 </div>
             </div>
         </div>
@@ -893,6 +1169,10 @@ Generated by Health Assistant
             st.session_state.auth_method = 'patient_id'
             st.session_state.otp_verified = False
             st.session_state.otp_phone = None
+            st.session_state.show_reconciliation = False
+            st.session_state.medical_sources = None
+            st.session_state.consent_given = False
+            st.session_state.duplicate_confirmations = []
             st.rerun()
 
     # Footer
