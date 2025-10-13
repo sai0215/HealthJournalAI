@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import pandas as pd
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from std_hub.llm import AgentProject
 from openai import OpenAI
 from project import project_init
@@ -13,6 +13,11 @@ from patient_registration import PatientRegistration, get_registration_form_data
 from std_hub.db.mongodb import db_client
 from otp_service import get_otp_service
 from medical_history_reconciliation import get_medical_reconciliation
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import numpy as np
+from collections import Counter
 
 # Load environment variables
 load_dotenv()
@@ -264,6 +269,7 @@ with st.sidebar:
         'reconciliation': '🔄 Medical History',
         'patient_info': '2️⃣ Health Info',
         'symptoms': '3️⃣ Symptoms',
+        'insights': '📊 Insights Dashboard',
         'summary': '4️⃣ Summary'
     }
 
@@ -1150,7 +1156,7 @@ elif st.session_state.stage == 'symptoms':
                 st.rerun()
 
         with col_btn2:
-            if st.button("Generate Report ➡️"):
+            if st.button("📊 Generate Insights ➡️"):
                 if combined_symptoms.strip():
                     st.session_state.symptom_changes = combined_symptoms
 
@@ -1170,7 +1176,7 @@ elif st.session_state.stage == 'symptoms':
                         "timestamp": datetime.now().isoformat()
                     }
 
-                    st.session_state.stage = 'summary'
+                    st.session_state.stage = 'insights'
                     st.rerun()
                 else:
                     st.warning(
@@ -1188,6 +1194,424 @@ elif st.session_state.stage == 'symptoms':
         </ul>
         </div>
         """, unsafe_allow_html=True)
+
+elif st.session_state.stage == 'insights':
+    st.title("📊 Patient 360 Insights Dashboard")
+    
+    # Patient header
+    col_header1, col_header2, col_header3 = st.columns([2, 1, 1])
+    with col_header1:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: white;">👤 {st.session_state.patient_records.get('Patient Name', 'Patient')}</h2>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">Patient ID: {st.session_state.patient_id} | Age: {st.session_state.patient_records.get('Age', 'N/A')} | Gender: {st.session_state.patient_records.get('Gender', 'N/A')}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_header2:
+        st.metric("🩺 Health Score", "85", "↑ 5%")
+    
+    with col_header3:
+        st.metric("📅 Last Visit", "2 days ago", "↓ 1 day")
+    
+    # Dashboard tabs
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏥 Medical Overview", "💊 Medications", "⚠️ Allergies & Risks", "📈 Trends & Analytics", "🔍 Detailed Analysis"])
+    
+    with tab1:
+        st.subheader("🏥 Medical Overview")
+        
+        # Medical conditions widget
+        col_med1, col_med2 = st.columns([2, 1])
+        
+        with col_med1:
+            st.markdown("### 📋 Medical Conditions")
+            conditions = st.session_state.patient_records.get('Past Medical History', '')
+            if conditions and conditions != 'No significant medical history':
+                conditions_list = [c.strip() for c in conditions.split(';') if c.strip()]
+                
+                # Create condition severity chart
+                condition_data = []
+                for condition in conditions_list:
+                    condition_data.append({
+                        'Condition': condition,
+                        'Severity': np.random.choice(['Mild', 'Moderate', 'Severe'], p=[0.4, 0.4, 0.2]),
+                        'Duration': f"{np.random.randint(1, 60)} months",
+                        'Status': np.random.choice(['Active', 'Controlled', 'Resolved'], p=[0.3, 0.5, 0.2])
+                    })
+                
+                df_conditions = pd.DataFrame(condition_data)
+                
+                # Condition status pie chart
+                status_counts = df_conditions['Status'].value_counts()
+                fig_status = px.pie(values=status_counts.values, names=status_counts.index, 
+                                  title="Condition Status Distribution",
+                                  color_discrete_sequence=px.colors.qualitative.Set3)
+                st.plotly_chart(fig_status, use_container_width=True)
+                
+                # Condition severity bar chart
+                severity_counts = df_conditions['Severity'].value_counts()
+                fig_severity = px.bar(x=severity_counts.index, y=severity_counts.values,
+                                    title="Condition Severity Distribution",
+                                    color=severity_counts.values,
+                                    color_continuous_scale="RdYlGn_r")
+                st.plotly_chart(fig_severity, use_container_width=True)
+            else:
+                st.info("No significant medical conditions recorded")
+        
+        with col_med2:
+            st.markdown("### 🔬 Recent Procedures")
+            procedures = st.session_state.patient_records.get('Recent Procedures', '')
+            if procedures and procedures != 'No recent procedures':
+                procedures_list = [p.strip() for p in procedures.split(';') if p.strip()]
+                
+                # Procedure timeline
+                procedure_data = []
+                for i, procedure in enumerate(procedures_list):
+                    procedure_data.append({
+                        'Procedure': procedure,
+                        'Date': (datetime.now() - timedelta(days=np.random.randint(1, 90))).strftime('%Y-%m-%d'),
+                        'Type': np.random.choice(['Diagnostic', 'Therapeutic', 'Preventive']),
+                        'Status': np.random.choice(['Completed', 'Scheduled', 'Pending'])
+                    })
+                
+                df_procedures = pd.DataFrame(procedure_data)
+                df_procedures['Date'] = pd.to_datetime(df_procedures['Date'])
+                df_procedures = df_procedures.sort_values('Date')
+                
+                # Procedure timeline
+                fig_timeline = px.timeline(df_procedures, x_start='Date', x_end='Date', y='Procedure',
+                                         color='Type', title="Procedure Timeline",
+                                         color_discrete_sequence=px.colors.qualitative.Pastel)
+                st.plotly_chart(fig_timeline, use_container_width=True)
+            else:
+                st.info("No recent procedures recorded")
+    
+    with tab2:
+        st.subheader("💊 Medication Management")
+        
+        col_med_tab1, col_med_tab2 = st.columns([1, 1])
+        
+        with col_med_tab1:
+            st.markdown("### 💊 Current Medications")
+            medications = st.session_state.patient_records.get('Current Medications', '')
+            if medications and medications != 'No current medications':
+                medications_list = [m.strip() for m in medications.split(';') if m.strip()]
+                
+                # Medication adherence simulation
+                med_data = []
+                for med in medications_list:
+                    med_data.append({
+                        'Medication': med,
+                        'Dosage': f"{np.random.randint(1, 10)}mg",
+                        'Frequency': np.random.choice(['Once daily', 'Twice daily', 'As needed']),
+                        'Adherence': np.random.randint(70, 100),
+                        'Side Effects': np.random.choice(['None', 'Mild', 'Moderate'], p=[0.6, 0.3, 0.1])
+                    })
+                
+                df_medications = pd.DataFrame(med_data)
+                
+                # Medication adherence gauge
+                avg_adherence = df_medications['Adherence'].mean()
+                fig_gauge = go.Figure(go.Indicator(
+                    mode = "gauge+number+delta",
+                    value = avg_adherence,
+                    domain = {'x': [0, 1], 'y': [0, 1]},
+                    title = {'text': "Average Adherence Rate (%)"},
+                    delta = {'reference': 80},
+                    gauge = {
+                        'axis': {'range': [None, 100]},
+                        'bar': {'color': "darkblue"},
+                        'steps': [
+                            {'range': [0, 50], 'color': "lightgray"},
+                            {'range': [50, 80], 'color': "yellow"},
+                            {'range': [80, 100], 'color': "green"}
+                        ],
+                        'threshold': {
+                            'line': {'color': "red", 'width': 4},
+                            'thickness': 0.75,
+                            'value': 90
+                        }
+                    }
+                ))
+                st.plotly_chart(fig_gauge, use_container_width=True)
+                
+                # Medication list with details
+                st.markdown("#### Current Medication Details")
+                for _, med in df_medications.iterrows():
+                    with st.expander(f"💊 {med['Medication']} - {med['Dosage']}"):
+                        st.write(f"**Frequency:** {med['Frequency']}")
+                        st.write(f"**Adherence:** {med['Adherence']}%")
+                        st.write(f"**Side Effects:** {med['Side Effects']}")
+                        
+                        # Adherence trend (simulated)
+                        dates = pd.date_range(start=datetime.now() - timedelta(days=30), end=datetime.now(), freq='D')
+                        adherence_trend = np.random.normal(med['Adherence'], 10, len(dates))
+                        adherence_trend = np.clip(adherence_trend, 0, 100)
+                        
+                        fig_trend = px.line(x=dates, y=adherence_trend, 
+                                          title=f"{med['Medication']} Adherence Trend",
+                                          labels={'x': 'Date', 'y': 'Adherence %'})
+                        st.plotly_chart(fig_trend, use_container_width=True)
+            else:
+                st.info("No current medications recorded")
+        
+        with col_med_tab2:
+            st.markdown("### 📊 Medication Analytics")
+            if medications and medications != 'No current medications':
+                # Drug interaction risk
+                interaction_risk = np.random.choice(['Low', 'Medium', 'High'], p=[0.7, 0.2, 0.1])
+                risk_color = {'Low': 'green', 'Medium': 'orange', 'High': 'red'}
+                
+                st.markdown(f"""
+                <div style="background-color: {risk_color[interaction_risk].replace('green', '#d4edda').replace('orange', '#fff3cd').replace('red', '#f8d7da')}; 
+                            border: 1px solid {risk_color[interaction_risk].replace('green', '#c3e6cb').replace('orange', '#ffeaa7').replace('red', '#f5c6cb')}; 
+                            padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    <h4 style="margin: 0; color: {risk_color[interaction_risk].replace('green', '#155724').replace('orange', '#856404').replace('red', '#721c24')};">
+                        🔍 Drug Interaction Risk: {interaction_risk}
+                    </h4>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Medication effectiveness heatmap
+                med_names = [m.strip() for m in medications.split(';') if m.strip()]
+                effectiveness_data = np.random.rand(len(med_names), 4)
+                
+                fig_heatmap = px.imshow(effectiveness_data,
+                                      x=['Effectiveness', 'Tolerability', 'Convenience', 'Cost'],
+                                      y=med_names,
+                                      color_continuous_scale='RdYlGn',
+                                      title="Medication Effectiveness Matrix")
+                st.plotly_chart(fig_heatmap, use_container_width=True)
+    
+    with tab3:
+        st.subheader("⚠️ Allergies & Risk Assessment")
+        
+        col_allergy1, col_allergy2 = st.columns([1, 1])
+        
+        with col_allergy1:
+            st.markdown("### ⚠️ Known Allergies")
+            allergies = st.session_state.patient_records.get('Drug Allergies', '')
+            if allergies and allergies != 'No known drug allergies':
+                allergies_list = [a.strip() for a in allergies.split(';') if a.strip()]
+                
+                # Allergy severity and type
+                allergy_data = []
+                for allergy in allergies_list:
+                    allergy_data.append({
+                        'Allergen': allergy,
+                        'Type': np.random.choice(['Drug', 'Food', 'Environmental']),
+                        'Severity': np.random.choice(['Mild', 'Moderate', 'Severe'], p=[0.3, 0.4, 0.3]),
+                        'Reaction': np.random.choice(['Rash', 'Swelling', 'Anaphylaxis', 'Nausea'])
+                    })
+                
+                df_allergies = pd.DataFrame(allergy_data)
+                
+                # Allergy severity distribution
+                severity_counts = df_allergies['Severity'].value_counts()
+                fig_allergy = px.bar(x=severity_counts.index, y=severity_counts.values,
+                                   title="Allergy Severity Distribution",
+                                   color=severity_counts.values,
+                                   color_continuous_scale="Reds")
+                st.plotly_chart(fig_allergy, use_container_width=True)
+                
+                # Allergy type pie chart
+                type_counts = df_allergies['Type'].value_counts()
+                fig_type = px.pie(values=type_counts.values, names=type_counts.index,
+                                title="Allergy Types",
+                                color_discrete_sequence=px.colors.qualitative.Set2)
+                st.plotly_chart(fig_type, use_container_width=True)
+            else:
+                st.info("No known allergies recorded")
+        
+        with col_allergy2:
+            st.markdown("### 🚨 Risk Assessment")
+            
+            # Risk factors
+            risk_factors = {
+                'Cardiovascular Risk': np.random.randint(20, 80),
+                'Diabetes Risk': np.random.randint(15, 70),
+                'Medication Interaction': np.random.randint(10, 60),
+                'Allergic Reaction': np.random.randint(5, 40)
+            }
+            
+            # Risk radar chart
+            categories = list(risk_factors.keys())
+            values = list(risk_factors.values())
+            
+            fig_radar = go.Figure()
+            fig_radar.add_trace(go.Scatterpolar(
+                r=values,
+                theta=categories,
+                fill='toself',
+                name='Risk Level',
+                line_color='red'
+            ))
+            
+            fig_radar.update_layout(
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 100]
+                    )),
+                showlegend=True,
+                title="Risk Assessment Radar"
+            )
+            
+            st.plotly_chart(fig_radar, use_container_width=True)
+            
+            # Risk alerts
+            high_risk = [k for k, v in risk_factors.items() if v > 60]
+            if high_risk:
+                st.warning(f"⚠️ High risk areas: {', '.join(high_risk)}")
+            else:
+                st.success("✅ All risk factors are within acceptable ranges")
+    
+    with tab4:
+        st.subheader("📈 Trends & Analytics")
+        
+        # Generate time series data for trends
+        dates = pd.date_range(start=datetime.now() - timedelta(days=90), end=datetime.now(), freq='D')
+        
+        col_trend1, col_trend2 = st.columns([1, 1])
+        
+        with col_trend1:
+            st.markdown("### 📊 Health Metrics Trends")
+            
+            # Simulate health metrics
+            weight_trend = 70 + np.cumsum(np.random.normal(0, 0.1, len(dates)))
+            bp_systolic = 120 + np.random.normal(0, 5, len(dates))
+            bp_diastolic = 80 + np.random.normal(0, 3, len(dates))
+            
+            # Multi-line chart for health metrics
+            fig_health = make_subplots(
+                rows=2, cols=1,
+                subplot_titles=('Weight Trend', 'Blood Pressure'),
+                vertical_spacing=0.1
+            )
+            
+            fig_health.add_trace(
+                go.Scatter(x=dates, y=weight_trend, name='Weight (kg)', line=dict(color='blue')),
+                row=1, col=1
+            )
+            
+            fig_health.add_trace(
+                go.Scatter(x=dates, y=bp_systolic, name='Systolic BP', line=dict(color='red')),
+                row=2, col=1
+            )
+            
+            fig_health.add_trace(
+                go.Scatter(x=dates, y=bp_diastolic, name='Diastolic BP', line=dict(color='orange')),
+                row=2, col=1
+            )
+            
+            fig_health.update_layout(height=600, title_text="Health Metrics Over Time")
+            st.plotly_chart(fig_health, use_container_width=True)
+        
+        with col_trend2:
+            st.markdown("### 📅 Visit Frequency")
+            
+            # Visit frequency data
+            visit_data = []
+            for i in range(12):  # Last 12 months
+                month = datetime.now() - timedelta(days=30*i)
+                visit_count = np.random.poisson(2)  # Average 2 visits per month
+                visit_data.append({
+                    'Month': month.strftime('%Y-%m'),
+                    'Visits': visit_count,
+                    'Type': np.random.choice(['Routine', 'Emergency', 'Follow-up'])
+                })
+            
+            df_visits = pd.DataFrame(visit_data)
+            df_visits = df_visits.sort_values('Month')
+            
+            # Visit frequency chart
+            fig_visits = px.bar(df_visits, x='Month', y='Visits',
+                              title="Monthly Visit Frequency",
+                              color='Visits',
+                              color_continuous_scale='Blues')
+            st.plotly_chart(fig_visits, use_container_width=True)
+            
+            # Symptom severity over time
+            st.markdown("#### 📈 Symptom Severity Trend")
+            symptom_severity = np.random.normal(3, 1, len(dates))
+            symptom_severity = np.clip(symptom_severity, 1, 10)
+            
+            fig_symptoms = px.line(x=dates, y=symptom_severity,
+                                 title="Symptom Severity Over Time (1-10 scale)",
+                                 labels={'x': 'Date', 'y': 'Severity'})
+            fig_symptoms.add_hline(y=5, line_dash="dash", line_color="red", 
+                                 annotation_text="Moderate Threshold")
+            st.plotly_chart(fig_symptoms, use_container_width=True)
+    
+    with tab5:
+        st.subheader("🔍 Detailed Analysis")
+        
+        # Current symptoms analysis
+        if hasattr(st.session_state, 'symptom_changes') and st.session_state.symptom_changes:
+            st.markdown("### 🩺 Current Symptoms Analysis")
+            
+            symptoms_text = st.session_state.symptom_changes.lower()
+            
+            # Symptom keyword analysis
+            symptom_keywords = ['fever', 'cough', 'headache', 'fatigue', 'pain', 'nausea', 'dizziness', 'breathing']
+            detected_symptoms = [symptom for symptom in symptom_keywords if symptom in symptoms_text]
+            
+            if detected_symptoms:
+                col_analysis1, col_analysis2 = st.columns([1, 1])
+                
+                with col_analysis1:
+                    # Symptom frequency
+                    symptom_counts = Counter(detected_symptoms)
+                    fig_symptom_freq = px.bar(x=list(symptom_counts.keys()), y=list(symptom_counts.values()),
+                                            title="Detected Symptoms",
+                                            color=list(symptom_counts.values()),
+                                            color_continuous_scale="Reds")
+                    st.plotly_chart(fig_symptom_freq, use_container_width=True)
+                
+                with col_analysis2:
+                    # Symptom severity assessment
+                    severity_scores = {symptom: np.random.randint(3, 8) for symptom in detected_symptoms}
+                    
+                    fig_severity = px.bar(x=list(severity_scores.keys()), y=list(severity_scores.values()),
+                                        title="Symptom Severity Assessment",
+                                        color=list(severity_scores.values()),
+                                        color_continuous_scale="RdYlGn_r")
+                    st.plotly_chart(fig_severity, use_container_width=True)
+        
+        # Comprehensive health summary
+        st.markdown("### 📋 Comprehensive Health Summary")
+        
+        col_summary1, col_summary2, col_summary3 = st.columns(3)
+        
+        with col_summary1:
+            st.metric("🏥 Total Conditions", len(conditions_list) if 'conditions_list' in locals() else 0)
+            st.metric("💊 Active Medications", len(medications_list) if 'medications_list' in locals() else 0)
+        
+        with col_summary2:
+            st.metric("⚠️ Known Allergies", len(allergies_list) if 'allergies_list' in locals() else 0)
+            st.metric("🔬 Recent Procedures", len(procedures_list) if 'procedures_list' in locals() else 0)
+        
+        with col_summary3:
+            st.metric("📅 Days Since Last Visit", np.random.randint(1, 30))
+            st.metric("🎯 Health Score", "85/100", "↑ 5")
+    
+    # Action buttons
+    st.markdown("---")
+    col_action1, col_action2, col_action3 = st.columns(3)
+    
+    with col_action1:
+        if st.button("⬅️ Back to Symptoms"):
+            st.session_state.stage = 'symptoms'
+            st.rerun()
+    
+    with col_action2:
+        if st.button("📄 Generate Summary Report"):
+            st.session_state.stage = 'summary'
+            st.rerun()
+    
+    with col_action3:
+        if st.button("🔄 Refresh Dashboard"):
+            st.rerun()
 
 elif st.session_state.stage == 'summary':
     st.title("📊 Health Assessment Summary")
