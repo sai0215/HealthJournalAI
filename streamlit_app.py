@@ -3,7 +3,12 @@ import json
 import pandas as pd
 import re
 from datetime import datetime, timedelta
-from std_hub.llm import AgentProject
+# Optional import for MongoDB-dependent features
+try:
+    from std_hub.llm import AgentProject
+except Exception as e:
+    print(f"Warning: Could not import AgentProject (MongoDB may not be available): {e}")
+    AgentProject = None
 from openai import OpenAI
 from project import project_init
 import logging
@@ -1253,7 +1258,7 @@ elif st.session_state.stage == 'insights':
         """, unsafe_allow_html=True)
     
     # Dashboard tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["🏥 Medical Overview", "💊 Medications", "⚠️ Allergies & Risks", "📈 Trends & Analytics", "🔍 Detailed Analysis", "📋 Clinical Notes & Care Plan", "📁 Digital Health Locker"])
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(["🏥 Medical Overview", "💊 Medications", "⚠️ Allergies & Risks", "📈 Trends & Analytics", "🔍 Detailed Analysis", "📋 Clinical Notes & Care Plan", "📁 Digital Health Locker", "👤 Avatar Journaling"])
     
     with tab1:
         st.markdown("""
@@ -2163,6 +2168,496 @@ elif st.session_state.stage == 'insights':
                     st.session_state.uploaded_documents.remove(doc)
                     st.success(f"✅ {doc['name']} deleted successfully!")
     
+        with tab8:
+            st.markdown("### 👤 My Health - Avatar Journaling")
+            st.markdown("Interactive body map for detailed health tracking and journaling")
+            
+            # Human Body Visual Representation
+            st.markdown("### 🫀 Human Body Map")
+            st.markdown("**Click on the body parts below to view health data:**")
+            
+            # Large visual human body
+            st.markdown("""
+            <div style="text-align: center; font-family: monospace; font-size: 24px; line-height: 1.4; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 40px; border-radius: 25px; border: 5px solid #007bff; margin: 30px 0; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
+            <pre style="margin: 0; font-size: 22px; color: #2c3e50;">
+                           🧠 HEAD
+                          /   \\
+                         /     \\
+                    🦴---🫁---🦴
+                   /  CHEST   \\
+                  💪           💪
+                 /  ARMS       \\
+                /               \\
+               /                 \\
+              /                   \\
+             /                     \\
+            /                       \\
+           /                         \\
+          /                           \\
+         /                             \\
+        /                               \\
+       /                                 \\
+      /                                   \\
+     /                                     \\
+    /                                       \\
+   /                                         \\
+  /                                           \\
+ /                                             \\
+/                                               \\
+🦵 LEGS                                        🦵
+            </pre>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Organ locations guide
+            st.markdown("#### 🫀 Organ Locations Guide")
+            st.markdown("""
+            <div style="text-align: center; font-family: monospace; font-size: 20px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 30px; border-radius: 20px; border: 4px solid #2196f3; margin: 25px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <strong style="font-size: 24px; color: #1976d2;">ORGANS LOCATION:</strong><br><br>
+            <span style="font-size: 28px;">❤️ Heart</span>    <span style="font-size: 28px;">🫁 Lungs</span>    <span style="font-size: 28px;">🫀 Liver</span>    <span style="font-size: 28px;">🫄 Stomach</span><br>
+            <span style="font-size: 28px;">🫘 Kidneys</span>  <span style="font-size: 28px;">🫀 Bladder</span>  <span style="font-size: 28px;">🧠 Brain</span>    <span style="font-size: 28px;">🦴 Shoulders</span><br>
+            <span style="font-size: 28px;">💪 Arms</span>     <span style="font-size: 28px;">🦵 Legs</span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Body part selection buttons
+            st.markdown("#### 🎯 Click on Body Parts to View Health Data")
+            
+            # Create columns for body part buttons
+            col1, col2, col3, col4, col5 = st.columns(5)
+            
+            # Row 1: Head
+            with col3:
+                if st.button("🧠 Head", key="head_btn", use_container_width=True, help="Click to view head health data"):
+                    st.session_state.selected_body_part = "head"
+                    st.rerun()
+            
+            # Row 2: Shoulders and Chest
+            with col1:
+                if st.button("🦴 Left Shoulder", key="l_shoulder_btn", use_container_width=True, help="Click to view left shoulder health data"):
+                    st.session_state.selected_body_part = "left_shoulder"
+                    st.rerun()
+            with col3:
+                if st.button("🫁 Chest", key="chest_btn", use_container_width=True, help="Click to view chest health data"):
+                    st.session_state.selected_body_part = "chest"
+                    st.rerun()
+            with col5:
+                if st.button("🦴 Right Shoulder", key="r_shoulder_btn", use_container_width=True, help="Click to view right shoulder health data"):
+                    st.session_state.selected_body_part = "right_shoulder"
+                    st.rerun()
+            
+            # Row 3: Arms
+            with col1:
+                if st.button("💪 Left Arm", key="l_arm_btn", use_container_width=True, help="Click to view left arm health data"):
+                    st.session_state.selected_body_part = "left_arm"
+                    st.rerun()
+            with col5:
+                if st.button("💪 Right Arm", key="r_arm_btn", use_container_width=True, help="Click to view right arm health data"):
+                    st.session_state.selected_body_part = "right_arm"
+                    st.rerun()
+            
+            # Row 4: Torso Organs
+            with col1:
+                if st.button("❤️ Heart", key="heart_btn", use_container_width=True, help="Click to view heart health data"):
+                    st.session_state.selected_body_part = "heart"
+                    st.rerun()
+            with col2:
+                if st.button("🫁 Lungs", key="lungs_btn", use_container_width=True, help="Click to view lungs health data"):
+                    st.session_state.selected_body_part = "lungs"
+                    st.rerun()
+            with col4:
+                if st.button("🫀 Liver", key="liver_btn", use_container_width=True, help="Click to view liver health data"):
+                    st.session_state.selected_body_part = "liver"
+                    st.rerun()
+            with col5:
+                if st.button("🫀 Bladder", key="bladder_btn", use_container_width=True, help="Click to view bladder health data"):
+                    st.session_state.selected_body_part = "bladder"
+                    st.rerun()
+            
+            # Row 5: Abdomen
+            with col2:
+                if st.button("🫄 Stomach", key="stomach_btn", use_container_width=True, help="Click to view stomach health data"):
+                    st.session_state.selected_body_part = "stomach"
+                    st.rerun()
+            with col4:
+                if st.button("🫘 Kidneys", key="kidneys_btn", use_container_width=True, help="Click to view kidneys health data"):
+                    st.session_state.selected_body_part = "kidneys"
+                    st.rerun()
+            
+            # Row 6: Legs
+            with col2:
+                if st.button("🦵 Left Leg", key="l_leg_btn", use_container_width=True, help="Click to view left leg health data"):
+                    st.session_state.selected_body_part = "left_leg"
+                    st.rerun()
+            with col4:
+                if st.button("🦵 Right Leg", key="r_leg_btn", use_container_width=True, help="Click to view right leg health data"):
+                    st.session_state.selected_body_part = "right_leg"
+                    st.rerun()
+            
+            # Health preview grid
+            st.markdown("---")
+            st.markdown("#### 📊 Body Part Health Preview")
+            st.markdown("**Quick Health Overview - Click any part above for detailed view:**")
+            
+            # Show preview for all body parts
+            body_parts_preview = {
+                "head": {"emoji": "🧠", "name": "Head", "score": "85%", "status": "🟢 Good", "details": "Memory: Good, Focus: Excellent"},
+                "chest": {"emoji": "🫁", "name": "Chest", "score": "78%", "status": "🟢 Good", "details": "Breathing: Normal, Capacity: Good"},
+                "heart": {"emoji": "❤️", "name": "Heart", "score": "88%", "status": "🟢 Excellent", "details": "BPM: 72, BP: 120/80"},
+                "lungs": {"emoji": "🫁", "name": "Lungs", "score": "82%", "status": "🟢 Good", "details": "Capacity: 4.2L, O2 Sat: 98%"},
+                "liver": {"emoji": "🫀", "name": "Liver", "score": "90%", "status": "🟢 Excellent", "details": "Enzymes: Normal, Function: Excellent"},
+                "stomach": {"emoji": "🫄", "name": "Stomach", "score": "75%", "status": "🟡 Fair", "details": "Digestion: Good, pH: Normal"},
+                "kidneys": {"emoji": "🫘", "name": "Kidneys", "score": "85%", "status": "🟢 Good", "details": "GFR: 95, Creatinine: Normal"},
+                "left_arm": {"emoji": "💪", "name": "Left Arm", "score": "80%", "status": "🟢 Good", "details": "Strength: Good, Flexibility: Fair"},
+                "right_arm": {"emoji": "💪", "name": "Right Arm", "score": "80%", "status": "🟢 Good", "details": "Strength: Good, Flexibility: Fair"},
+                "left_leg": {"emoji": "🦵", "name": "Left Leg", "score": "77%", "status": "🟡 Fair", "details": "Strength: Good, Circulation: Fair"},
+                "right_leg": {"emoji": "🦵", "name": "Right Leg", "score": "77%", "status": "🟡 Fair", "details": "Strength: Good, Circulation: Fair"},
+                "left_shoulder": {"emoji": "🦴", "name": "Left Shoulder", "score": "72%", "status": "🟡 Fair", "details": "Flexibility: Good, Tension: Low"},
+                "right_shoulder": {"emoji": "🦴", "name": "Right Shoulder", "score": "72%", "status": "🟡 Fair", "details": "Flexibility: Good, Tension: Low"},
+                "bladder": {"emoji": "🫀", "name": "Bladder", "score": "83%", "status": "🟢 Good", "details": "Function: Normal, Capacity: Good"}
+            }
+            
+            # Create a more visible grid of all body parts
+            cols = st.columns(7)
+            for i, (part_key, part_data) in enumerate(body_parts_preview.items()):
+                with cols[i % 7]:
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 18px; border: 4px solid #007bff; border-radius: 15px; margin: 8px; background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%); box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+                        <div style="font-size: 32px; margin-bottom: 10px;">{part_data['emoji']}</div>
+                        <div style="font-size: 13px; font-weight: bold; color: #2c3e50; margin-bottom: 8px;">{part_data['name']}</div>
+                        <div style="font-size: 18px; color: #28a745; font-weight: bold; margin-bottom: 5px;">{part_data['score']}</div>
+                        <div style="font-size: 13px; color: #6c757d;">{part_data['status']}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            # Display selected body part information
+            selected_part = st.session_state.get('selected_body_part', None)
+            
+            if selected_part:
+                st.markdown("---")
+                st.subheader(f"📊 {selected_part.replace('_', ' ').title()} Health Data")
+                
+                # Body part specific data
+                body_part_data = {
+                    "head": {"score": "85", "details": "Memory: Good, Focus: Excellent, Sleep: 7.5hrs", "color": "🟢"},
+                    "chest": {"score": "78", "details": "Breathing: Normal, Capacity: Good, Pain: None", "color": "🟢"},
+                    "heart": {"score": "88", "details": "BPM: 72, BP: 120/80, Rhythm: Regular", "color": "🟢"},
+                    "lungs": {"score": "82", "details": "Capacity: 4.2L, O2 Sat: 98%, Function: Good", "color": "🟢"},
+                    "liver": {"score": "90", "details": "Enzymes: Normal, Function: Excellent, Toxins: Low", "color": "🟢"},
+                    "stomach": {"score": "75", "details": "Digestion: Good, pH: Normal, Discomfort: None", "color": "🟡"},
+                    "kidneys": {"score": "85", "details": "GFR: 95, Creatinine: Normal, Function: Good", "color": "🟢"},
+                    "left_arm": {"score": "80", "details": "Strength: Good, Flexibility: Fair, Pain: None", "color": "🟢"},
+                    "right_arm": {"score": "80", "details": "Strength: Good, Flexibility: Fair, Pain: None", "color": "🟢"},
+                    "left_leg": {"score": "77", "details": "Strength: Good, Circulation: Fair, Pain: Mild", "color": "🟡"},
+                    "right_leg": {"score": "77", "details": "Strength: Good, Circulation: Fair, Pain: Mild", "color": "🟡"},
+                    "left_shoulder": {"score": "72", "details": "Flexibility: Good, Tension: Low, Posture: Fair", "color": "🟡"},
+                    "right_shoulder": {"score": "72", "details": "Flexibility: Good, Tension: Low, Posture: Fair", "color": "🟡"},
+                    "bladder": {"score": "83", "details": "Function: Normal, Capacity: Good, No Issues", "color": "🟢"}
+                }
+                
+                if selected_part in body_part_data:
+                    data = body_part_data[selected_part]
+                    
+                    # Display health information
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Health Score", f"{data['score']}%")
+                    with col2:
+                        st.metric("Status", data['color'])
+                    with col3:
+                        st.metric("Last Check", "2 days ago")
+                    
+                    st.info(f"**Details:** {data['details']}")
+                    
+                    # Action buttons for the selected body part
+                    st.subheader("📝 Actions")
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        if st.button("💊 Add Medication", key=f"med_{selected_part}"):
+                            st.success(f"💊 Medication form for {selected_part.replace('_', ' ').title()}")
+                    
+                    with col2:
+                        if st.button("⚠️ Add Symptom", key=f"symptom_{selected_part}"):
+                            st.success(f"⚠️ Symptom form for {selected_part.replace('_', ' ').title()}")
+                    
+                    with col3:
+                        if st.button("📊 View Trends", key=f"trends_{selected_part}"):
+                            st.success(f"📊 Trends for {selected_part.replace('_', ' ').title()}")
+                    
+                    with col4:
+                        if st.button("📋 View History", key=f"history_{selected_part}"):
+                            st.success(f"📋 History for {selected_part.replace('_', ' ').title()}")
+                
+                else:
+                    st.info("👆 Click on any body part above to view its health data and add information")
+            
+            else:
+                st.info("👆 Click on any body part above to view its health data and add information")
+            
+            # Initialize selected_organ for compatibility with existing code
+            selected_organ = selected_part if selected_part else "heart"
+            
+            # The visual body system above handles all the organ selection and display
+        
+            # Health Progress Tracking
+            st.markdown("#### 📊 Health Progress Over Time")
+            
+            col_progress1, col_progress2 = st.columns(2)
+            
+            with col_progress1:
+                st.markdown("**📅 3 Months Ago**")
+                st.write("⚖️ Weight: 75kg")
+                st.write("🩸 BP: 140/90")
+                st.write("⚡ Energy: Low")
+                st.write("🧠 Memory: Fair")
+                st.write("❤️ Heart Rate: 85 BPM")
+            
+            with col_progress2:
+                st.markdown("**🎯 Now**")
+                st.write("⚖️ Weight: 70kg")
+                st.write("🩸 BP: 120/80")
+                st.write("⚡ Energy: High")
+                st.write("🧠 Memory: Good")
+                st.write("❤️ Heart Rate: 72 BPM")
+            
+            st.success("📈 Overall Health Improvement: 75% Better")
+            
+            # Quick Health Actions
+            st.markdown("#### 🚀 Quick Health Actions")
+            col_action1, col_action2, col_action3 = st.columns(3)
+            
+            with col_action1:
+                if st.button("📝 Log Symptoms", key="log_symptoms"):
+                    st.session_state.show_symptom_logger = True
+            
+            with col_action2:
+                if st.button("💊 Add Medication", key="add_medication"):
+                    st.session_state.show_medication_form = True
+            
+            with col_action3:
+                if st.button("📊 View Trends", key="view_trends"):
+                    st.session_state.show_health_trends = True
+            
+            # Symptom Logger
+            if st.session_state.get('show_symptom_logger', False):
+                with st.expander("📝 Log New Symptoms", expanded=True):
+                    with st.form("symptom_logger"):
+                        col_s1, col_s2 = st.columns(2)
+                        
+                        with col_s1:
+                            body_part = st.selectbox("Body Part", ["Head", "Neck", "Chest", "Heart", "Lungs", "Stomach", "Liver", "Kidneys", "Arms", "Legs"])
+                            symptom = st.text_input("Symptom Description")
+                            severity = st.select_slider("Severity", options=["Mild", "Moderate", "Severe"])
+                        
+                        with col_s2:
+                            duration = st.text_input("Duration")
+                            frequency = st.selectbox("Frequency", ["Once", "Daily", "Weekly", "Occasional"])
+                            notes = st.text_area("Additional Notes")
+                        
+                        if st.form_submit_button("Log Symptom"):
+                            if 'avatar_symptoms' not in st.session_state:
+                                st.session_state.avatar_symptoms = []
+                            
+                            st.session_state.avatar_symptoms.append({
+                                'body_part': body_part.lower(),
+                                'symptom': symptom,
+                                'severity': severity,
+                                'duration': duration,
+                                'frequency': frequency,
+                                'notes': notes,
+                                'date': datetime.now().strftime('%Y-%m-%d %H:%M')
+                            })
+                            
+                            st.success(f"✅ Symptom logged for {body_part}")
+                            st.session_state.show_symptom_logger = False
+                            st.rerun()
+            
+            # Medication Form
+            if st.session_state.get('show_medication_form', False):
+                with st.expander("💊 Add New Medication", expanded=True):
+                    with st.form("medication_form"):
+                        col_m1, col_m2 = st.columns(2)
+                        
+                        with col_m1:
+                            body_part = st.selectbox("Target Body Part", ["Head", "Neck", "Chest", "Heart", "Lungs", "Stomach", "Liver", "Kidneys", "Arms", "Legs"])
+                            med_name = st.text_input("Medication Name")
+                            dosage = st.text_input("Dosage")
+                        
+                        with col_m2:
+                            frequency = st.selectbox("Frequency", ["Once daily", "Twice daily", "Three times daily", "As needed", "Weekly"])
+                            start_date = st.date_input("Start Date")
+                            end_date = st.date_input("End Date (Optional)", value=None)
+                        
+                        if st.form_submit_button("Add Medication"):
+                            if 'avatar_medications' not in st.session_state:
+                                st.session_state.avatar_medications = []
+                            
+                            st.session_state.avatar_medications.append({
+                                'body_part': body_part.lower(),
+                                'name': med_name,
+                                'dosage': dosage,
+                                'frequency': frequency,
+                                'start_date': start_date,
+                                'end_date': end_date,
+                                'date_added': datetime.now().strftime('%Y-%m-%d %H:%M')
+                            })
+                            
+                            st.success(f"✅ Medication added for {body_part}")
+                            st.session_state.show_medication_form = False
+                            st.rerun()
+            
+            # Health Trends
+            if st.session_state.get('show_health_trends', False):
+                with st.expander("📊 Health Trends Analysis", expanded=True):
+                    st.markdown("**📈 Recent Health Trends**")
+                    
+                    # Simulated trend data
+                    import numpy as np
+                    import plotly.graph_objects as go
+                    
+                    # Generate sample trend data
+                    dates = pd.date_range(start='2024-01-01', end='2024-01-30', freq='D')
+                    weight_trend = 75 - np.cumsum(np.random.normal(0.1, 0.3, len(dates)))
+                    bp_systolic = 140 - np.cumsum(np.random.normal(0.5, 1, len(dates)))
+                    energy_level = 3 + np.cumsum(np.random.normal(0.05, 0.2, len(dates)))
+                    
+                    # Create trend charts
+                    fig = go.Figure()
+                    
+                    fig.add_trace(go.Scatter(x=dates, y=weight_trend, mode='lines+markers', 
+                                           name='Weight (kg)', line=dict(color='#4caf50')))
+                    fig.add_trace(go.Scatter(x=dates, y=bp_systolic, mode='lines+markers', 
+                                           name='BP Systolic', line=dict(color='#f44336'), yaxis='y2'))
+                    fig.add_trace(go.Scatter(x=dates, y=energy_level, mode='lines+markers', 
+                                           name='Energy Level', line=dict(color='#ff9800'), yaxis='y3'))
+                    
+                    fig.update_layout(
+                        title="Health Trends Over Time",
+                        xaxis_title="Date",
+                        yaxis=dict(title="Weight (kg)", side="left"),
+                        yaxis2=dict(title="BP Systolic", side="right", overlaying="y"),
+                        yaxis3=dict(title="Energy Level", side="right", overlaying="y", position=0.95),
+                        height=400
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    st.session_state.show_health_trends = False
+            
+            # Health Summary
+            st.markdown("#### 📋 Health Summary")
+            
+            if 'avatar_medications' in st.session_state and st.session_state.avatar_medications:
+                st.markdown("**💊 Current Medications:**")
+                for med in st.session_state.avatar_medications[-5:]:  # Show last 5
+                    st.write(f"• **{med['body_part'].replace('_', ' ').title()}**: {med['name']} ({med['dosage']}) - {med['frequency']}")
+            
+            if 'avatar_symptoms' in st.session_state and st.session_state.avatar_symptoms:
+                st.markdown("**⚠️ Recent Symptoms:**")
+                for symptom in st.session_state.avatar_symptoms[-5:]:  # Show last 5
+                    severity_color = {'Mild': '🟢', 'Moderate': '🟡', 'Severe': '🔴'}
+                    st.write(f"• **{symptom['body_part'].replace('_', ' ').title()}**: {symptom['symptom']} {severity_color[symptom['severity']]} ({symptom['date']})")
+            
+            if not st.session_state.get('avatar_medications') and not st.session_state.get('avatar_symptoms'):
+                st.info("👆 Hover over body parts in the avatar above to see health data, or use the quick actions to log symptoms and medications.")
+                
+                # Quick Add Options
+                col_quick1, col_quick2 = st.columns(2)
+                
+                with col_quick1:
+                    if st.button("💊 Add Medication", key="add_med_avatar"):
+                        st.session_state.show_med_form = True
+                
+                with col_quick2:
+                    if st.button("⚠️ Add Symptom", key="add_symptom_avatar"):
+                        st.session_state.show_symptom_form = True
+                
+                # Medication Form
+                if st.session_state.get('show_med_form', False):
+                    with st.form("medication_form_avatar"):
+                        st.write("**Add Medication for " + selected_body_part.replace('_', ' ').title() + "**")
+                        med_name = st.text_input("Medication Name")
+                        dosage = st.text_input("Dosage")
+                        frequency = st.selectbox("Frequency", ["Once daily", "Twice daily", "As needed"])
+                        start_date = st.date_input("Start Date")
+                        
+                        if st.form_submit_button("Add Medication"):
+                            # Store medication data
+                            if 'avatar_medications' not in st.session_state:
+                                st.session_state.avatar_medications = []
+                            
+                            st.session_state.avatar_medications.append({
+                                'body_part': selected_body_part,
+                                'name': med_name,
+                                'dosage': dosage,
+                                'frequency': frequency,
+                                'start_date': start_date
+                            })
+                            
+                            st.success(f"✅ Medication added for {selected_body_part.replace('_', ' ').title()}")
+                            st.session_state.show_med_form = False
+                            st.rerun()
+                
+                # Symptom Form
+                if st.session_state.get('show_symptom_form', False):
+                    with st.form("symptom_form_avatar"):
+                        st.write("**Add Symptom for " + selected_body_part.replace('_', ' ').title() + "**")
+                        symptom = st.text_input("Symptom")
+                        severity = st.select_slider("Severity", options=["Mild", "Moderate", "Severe"])
+                        duration = st.text_input("Duration")
+                        notes = st.text_area("Notes")
+                        
+                        if st.form_submit_button("Add Symptom"):
+                            # Store symptom data
+                            if 'avatar_symptoms' not in st.session_state:
+                                st.session_state.avatar_symptoms = []
+                            
+                            st.session_state.avatar_symptoms.append({
+                                'body_part': selected_body_part,
+                                'symptom': symptom,
+                                'severity': severity,
+                                'duration': duration,
+                                'notes': notes,
+                                'date': datetime.now().strftime('%Y-%m-%d')
+                            })
+                            
+                            st.success(f"✅ Symptom added for {selected_body_part.replace('_', ' ').title()}")
+                            st.session_state.show_symptom_form = False
+                            st.rerun()
+            
+            else:
+                st.info("👆 Click on a body part to start journaling")
+            
+            # Health Summary
+            st.markdown("""
+            <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+                <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">📊 Health Summary</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display stored data
+            if 'avatar_medications' in st.session_state and st.session_state.avatar_medications:
+                st.markdown("**💊 Medications by Body Part:**")
+                for med in st.session_state.avatar_medications:
+                    st.markdown(f"• **{med['body_part'].replace('_', ' ').title()}**: {med['name']} ({med['dosage']})")
+            
+            if 'avatar_symptoms' in st.session_state and st.session_state.avatar_symptoms:
+                st.markdown("**⚠️ Symptoms by Body Part:**")
+                for symptom in st.session_state.avatar_symptoms:
+                    severity_color = {'Mild': '🟢', 'Moderate': '🟡', 'Severe': '🔴'}
+                    st.markdown(f"• **{symptom['body_part'].replace('_', ' ').title()}**: {symptom['symptom']} {severity_color[symptom['severity']]}")
+        
+        # Body Part Selection Buttons (Alternative to SVG clicks)
+        st.markdown("""
+        <div style="background-color: #ffffff; padding: 1px; border-radius: 2px; margin-bottom: 0px;">
+            <h4 style="margin: 0 0 0px 0; color: #495057; font-size: 16px; font-weight: 600;">🎯 Quick Select Body Parts</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Note: JavaScript removed to prevent conflicts with Streamlit
+        st.info("💡 **Tip**: Use the body part buttons above to select a body part and add health information!")
+    
     # Action buttons
     st.markdown("---")
     col_action1, col_action2, col_action3, col_action4 = st.columns(4)
@@ -2337,8 +2832,7 @@ Please review the complete dashboard for detailed insights and trends.
                             font-size: 16px;
                             box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
                             transition: all 0.3s ease;
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" 
-                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'">
+                        ">
                             📱 Open WhatsApp to Send
                         </a>
                     </div>
@@ -2392,8 +2886,7 @@ Please review the complete dashboard for detailed insights and trends.
                             font-size: 16px;
                             box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
                             transition: all 0.3s ease;
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 123, 255, 0.4)'" 
-                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 123, 255, 0.3)'">
+                        ">
                             💬 Open SMS to Send
                         </a>
                     </div>
@@ -2486,8 +2979,7 @@ Health Journal System
                             font-size: 16px;
                             box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
                             transition: all 0.3s ease;
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(220, 53, 69, 0.4)'" 
-                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(220, 53, 69, 0.3)'">
+                        ">
                             📧 Open Email Client
                         </a>
                     </div>

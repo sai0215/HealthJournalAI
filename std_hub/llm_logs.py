@@ -7,12 +7,22 @@ from datetime import datetime,timezone
 from std_hub.db.mongodb import db_client
 
 # Handle case where MongoDB is not available
-if db_client:
-    db = db_client["flow_project"]
-    col_projects = db["projects"]
-    col_kickoffs = db["kickoffs"]
-    col_kickoffs.create_index([('user_id', 1), ('kickoff_id', 1)])
-else:
+try:
+    if db_client:
+        db = db_client["flow_project"]
+        col_projects = db["projects"]
+        col_kickoffs = db["kickoffs"]
+        # Create index with timeout handling
+        try:
+            col_kickoffs.create_index([('user_id', 1), ('kickoff_id', 1)])
+        except Exception as e:
+            print(f"Warning: Could not create MongoDB index: {e}")
+    else:
+        db = None
+        col_projects = None
+        col_kickoffs = None
+except Exception as e:
+    print(f"Warning: MongoDB connection failed: {e}")
     db = None
     col_projects = None
     col_kickoffs = None

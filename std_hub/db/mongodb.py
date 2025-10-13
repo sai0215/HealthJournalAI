@@ -29,12 +29,12 @@ if not mongo_uri:
 if mongo_uri:
     try:
         # Attempt to connect to MongoDB (Atlas or local)
-        # Increased timeout for cloud connections
+        # Reduced timeout for faster failure detection
         db_client = MongoClient(
             mongo_uri, 
-            serverSelectionTimeoutMS=10000,  # 10-second timeout for cloud
-            connectTimeoutMS=10000,
-            socketTimeoutMS=10000
+            serverSelectionTimeoutMS=3000,  # 3-second timeout for faster failure
+            connectTimeoutMS=3000,
+            socketTimeoutMS=3000
         )
        
         # Ping the server to check if MongoDB is running

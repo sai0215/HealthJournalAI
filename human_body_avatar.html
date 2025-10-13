@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human Body Avatar - Health Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .body-map {
+            text-align: center;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.2;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        .body-parts {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .body-part {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .body-part:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+        .health-preview {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin: 30px 0;
+        }
+        .health-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .health-card:hover {
+            background-color: #e9ecef;
+            transform: scale(1.05);
+        }
+        .health-card .emoji {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .health-card .name {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .health-card .score {
+            font-size: 12px;
+            color: #28a745;
+            font-weight: bold;
+        }
+        .health-card .status {
+            font-size: 10px;
+            margin-top: 3px;
+        }
+        .selected-info {
+            background-color: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .metric .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .metric .label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .action-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        .action-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🫀 Human Body Avatar - Health Tracker</h1>
+        <p style="text-align: center; color: #6c757d;">Click on body parts to view health data and add information</p>
+        
+        <!-- Human Body Visual Representation -->
+        <div class="body-map">
+            <h3>🫀 Human Body Map</h3>
+            <pre>
+                           🧠 HEAD
+                          /   \
+                         /     \
+                    🦴---🫁---🦴
+                   /  CHEST   \
+                  💪           💪
+                 /  ARMS       \
+                /               \
+               /                 \
+              /                   \
+             /                     \
+            /                       \
+           /                         \
+          /                           \
+         /                             \
+        /                               \
+       /                                 \
+      /                                   \
+     /                                     \
+    /                                       \
+   /                                         \
+  /                                           \
+ /                                             \
+/                                               \
+🦵 LEGS                                        🦵
+
+ORGANS LOCATION:
+❤️ Heart    🫁 Lungs    🫀 Liver    🫄 Stomach
+🫘 Kidneys  🫀 Bladder  🧠 Brain    🦴 Shoulders
+💪 Arms     🦵 Legs
+            </pre>
+        </div>
+        
+        <!-- Body Part Buttons -->
+        <h3>🎯 Click on Body Parts to View Health Data</h3>
+        <div class="body-parts">
+            <button class="body-part" onclick="selectBodyPart('head')">🧠 Head</button>
+            <button class="body-part" onclick="selectBodyPart('left_shoulder')">🦴 Left Shoulder</button>
+            <button class="body-part" onclick="selectBodyPart('chest')">🫁 Chest</button>
+            <button class="body-part" onclick="selectBodyPart('right_shoulder')">🦴 Right Shoulder</button>
+            <button class="body-part" onclick="selectBodyPart('left_arm')">💪 Left Arm</button>
+            <button class="body-part" onclick="selectBodyPart('heart')">❤️ Heart</button>
+            <button class="body-part" onclick="selectBodyPart('lungs')">🫁 Lungs</button>
+            <button class="body-part" onclick="selectBodyPart('liver')">🫀 Liver</button>
+            <button class="body-part" onclick="selectBodyPart('right_arm')">💪 Right Arm</button>
+            <button class="body-part" onclick="selectBodyPart('stomach')">🫄 Stomach</button>
+            <button class="body-part" onclick="selectBodyPart('kidneys')">🫘 Kidneys</button>
+            <button class="body-part" onclick="selectBodyPart('bladder')">🫀 Bladder</button>
+            <button class="body-part" onclick="selectBodyPart('left_leg')">🦵 Left Leg</button>
+            <button class="body-part" onclick="selectBodyPart('right_leg')">🦵 Right Leg</button>
+        </div>
+        
+        <!-- Health Preview Grid -->
+        <h3>📊 Body Part Health Preview</h3>
+        <p><strong>Quick Health Overview - Click any part above for detailed view:</strong></p>
+        <div class="health-preview">
+            <div class="health-card">
+                <div class="emoji">🧠</div>
+                <div class="name">Head</div>
+                <div class="score">85%</div>
+                <div class="status">🟢 Good</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">🫁</div>
+                <div class="name">Chest</div>
+                <div class="score">78%</div>
+                <div class="status">🟢 Good</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">❤️</div>
+                <div class="name">Heart</div>
+                <div class="score">88%</div>
+                <div class="status">🟢 Excellent</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">🫁</div>
+                <div class="name">Lungs</div>
+                <div class="score">82%</div>
+                <div class="status">🟢 Good</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">🫀</div>
+                <div class="name">Liver</div>
+                <div class="score">90%</div>
+                <div class="status">🟢 Excellent</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">🫄</div>
+                <div class="name">Stomach</div>
+                <div class="score">75%</div>
+                <div class="status">🟡 Fair</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">🫘</div>
+                <div class="name">Kidneys</div>
+                <div class="score">85%</div>
+                <div class="status">🟢 Good</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">💪</div>
+                <div class="name">Arms</div>
+                <div class="score">80%</div>
+                <div class="status">🟢 Good</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">🦵</div>
+                <div class="name">Legs</div>
+                <div class="score">77%</div>
+                <div class="status">🟡 Fair</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">🦴</div>
+                <div class="name">Shoulders</div>
+                <div class="score">72%</div>
+                <div class="status">🟡 Fair</div>
+            </div>
+            <div class="health-card">
+                <div class="emoji">🫀</div>
+                <div class="name">Bladder</div>
+                <div class="score">83%</div>
+                <div class="status">🟢 Good</div>
+            </div>
+        </div>
+        
+        <!-- Selected Body Part Information -->
+        <div id="selectedInfo" class="selected-info">
+            <h3 id="selectedTitle">📊 Selected Body Part Health Data</h3>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="value" id="healthScore">--</div>
+                    <div class="label">Health Score</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="status">--</div>
+                    <div class="label">Status</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="lastCheck">--</div>
+                    <div class="label">Last Check</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="details">--</div>
+                    <div class="label">Details</div>
+                </div>
+            </div>
+            
+            <h4>📝 Actions</h4>
+            <div class="actions">
+                <button class="action-btn" onclick="addMedication()">💊 Add Medication</button>
+                <button class="action-btn" onclick="addSymptom()">⚠️ Add Symptom</button>
+                <button class="action-btn" onclick="viewTrends()">📊 View Trends</button>
+                <button class="action-btn" onclick="viewHistory()">📋 View History</button>
+            </div>
+        </div>
+        
+        <!-- Overall Health Summary -->
+        <div style="margin-top: 40px;">
+            <h3>📊 Overall Health Summary</h3>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="value">82%</div>
+                    <div class="label">Overall Score ↗️ +5%</div>
+                </div>
+                <div class="metric">
+                    <div class="value">2</div>
+                    <div class="label">Active Issues ↘️ -1</div>
+                </div>
+                <div class="metric">
+                    <div class="value">3</div>
+                    <div class="label">Medications → 0</div>
+                </div>
+                <div class="metric">
+                    <div class="value">2 days</div>
+                    <div class="label">Last Checkup → 0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div style="margin-top: 30px;">
+            <h3>📅 Recent Activity</h3>
+            <ul>
+                <li><strong>Today:</strong> 💊 Took morning medication (Heart)</li>
+                <li><strong>Yesterday:</strong> ⚠️ Mild headache reported (Head)</li>
+                <li><strong>2 days ago:</strong> 📊 Health checkup completed (Overall)</li>
+                <li><strong>3 days ago:</strong> 💪 Exercise session logged (Legs)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        const bodyPartData = {
+            "head": {"score": "85%", "status": "🟢 Good", "details": "Memory: Good, Focus: Excellent, Sleep: 7.5hrs"},
+            "chest": {"score": "78%", "status": "🟢 Good", "details": "Breathing: Normal, Capacity: Good, Pain: None"},
+            "heart": {"score": "88%", "status": "🟢 Excellent", "details": "BPM: 72, BP: 120/80, Rhythm: Regular"},
+            "lungs": {"score": "82%", "status": "🟢 Good", "details": "Capacity: 4.2L, O2 Sat: 98%, Function: Good"},
+            "liver": {"score": "90%", "status": "🟢 Excellent", "details": "Enzymes: Normal, Function: Excellent, Toxins: Low"},
+            "stomach": {"score": "75%", "status": "🟡 Fair", "details": "Digestion: Good, pH: Normal, Discomfort: None"},
+            "kidneys": {"score": "85%", "status": "🟢 Good", "details": "GFR: 95, Creatinine: Normal, Function: Good"},
+            "left_arm": {"score": "80%", "status": "🟢 Good", "details": "Strength: Good, Flexibility: Fair, Pain: None"},
+            "right_arm": {"score": "80%", "status": "🟢 Good", "details": "Strength: Good, Flexibility: Fair, Pain: None"},
+            "left_leg": {"score": "77%", "status": "🟡 Fair", "details": "Strength: Good, Circulation: Fair, Pain: Mild"},
+            "right_leg": {"score": "77%", "status": "🟡 Fair", "details": "Strength: Good, Circulation: Fair, Pain: Mild"},
+            "left_shoulder": {"score": "72%", "status": "🟡 Fair", "details": "Flexibility: Good, Tension: Low, Posture: Fair"},
+            "right_shoulder": {"score": "72%", "status": "🟡 Fair", "details": "Flexibility: Good, Tension: Low, Posture: Fair"},
+            "bladder": {"score": "83%", "status": "🟢 Good", "details": "Function: Normal, Capacity: Good, No Issues"}
+        };
+        
+        function selectBodyPart(part) {
+            const data = bodyPartData[part];
+            if (data) {
+                document.getElementById('selectedTitle').textContent = `📊 ${part.replace('_', ' ').toUpperCase()} Health Data`;
+                document.getElementById('healthScore').textContent = data.score;
+                document.getElementById('status').textContent = data.status;
+                document.getElementById('lastCheck').textContent = '2 days ago';
+                document.getElementById('details').textContent = data.details;
+                document.getElementById('selectedInfo').style.display = 'block';
+            }
+        }
+        
+        function addMedication() {
+            alert('💊 Medication form would open here');
+        }
+        
+        function addSymptom() {
+            alert('⚠️ Symptom form would open here');
+        }
+        
+        function viewTrends() {
+            alert('📊 Trends chart would open here');
+        }
+        
+        function viewHistory() {
+            alert('📋 History would open here');
+        }
+    </script>
+</body>
+</html>
