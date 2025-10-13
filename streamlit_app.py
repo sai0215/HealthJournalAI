@@ -872,6 +872,7 @@ elif st.session_state.stage == 'patient_info':
         allergies = patient_records.get('Drug Allergies', 'None')
         history = patient_records.get('Past Medical History', 'None')
         medications = patient_records.get('Current Medications', 'None')
+        recent_procedures = patient_records.get('Recent Procedures', 'None')
         
         # Check if medical history was reconciled
         reconciled = patient_records.get('Medical History Reconciled', 'No')
@@ -897,6 +898,7 @@ elif st.session_state.stage == 'patient_info':
         allergies = clean_medical_data(allergies)
         history = clean_medical_data(history)
         medications = clean_medical_data(medications)
+        recent_procedures = clean_medical_data(recent_procedures)
 
         # Set display values and status
         if not allergies:
@@ -916,6 +918,12 @@ elif st.session_state.stage == 'patient_info':
             medication_status = 'success'
         else:
             medication_status = 'info'
+            
+        if not recent_procedures:
+            recent_procedures = 'No recent procedures'
+            procedure_status = 'success'
+        else:
+            procedure_status = 'info'
 
         # Show reconciliation status if applicable
         if reconciled == 'Yes':
@@ -942,23 +950,116 @@ elif st.session_state.stage == 'patient_info':
                     <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">💊 Current Medications</h4>
                     <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{medications}</p>
                 </div>
+                <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #fd7e14; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">🔬 Recent Procedures</h4>
+                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{recent_procedures}</p>
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("---")
 
-        # Additional information form
-        st.subheader("🆕 Additional Health Information")
-        additional_info = st.text_area(
-            "Do you have any new allergies or chronic conditions to report?",
-            placeholder="e.g., Recently developed peanut allergy, diagnosed with diabetes...",
-            height=100,
-            help="This helps us provide better recommendations"
-        )
+        # Add new items section integrated with medical history
+        st.subheader("➕ Add New Medical Information")
+        
+        # Create expandable sections for adding new items
+        with st.expander("📋 Add New Medical Conditions", expanded=False):
+            with st.form("add_conditions_form"):
+                new_conditions = st.text_area(
+                    "Enter new medical conditions (one per line or separated by commas):",
+                    placeholder="e.g., High blood pressure\nDiabetes\nAsthma",
+                    height=100
+                )
+                if st.form_submit_button("✅ Add Conditions"):
+                    if new_conditions.strip():
+                        # Process new conditions
+                        conditions_list = [cond.strip() for cond in new_conditions.replace('\n', ',').split(',') if cond.strip()]
+                        if conditions_list:
+                            current_conditions = patient_records.get('Past Medical History', '')
+                            if current_conditions and current_conditions != 'No significant medical history':
+                                new_conditions_str = ', '.join(conditions_list)
+                                patient_records['Past Medical History'] = f"{current_conditions}; {new_conditions_str}"
+                            else:
+                                patient_records['Past Medical History'] = ', '.join(conditions_list)
+                            
+                            st.session_state.patient_records = patient_records
+                            st.success(f"✅ Added {len(conditions_list)} new condition(s)!")
+                            st.rerun()
 
+        with st.expander("💊 Add New Medications", expanded=False):
+            with st.form("add_medications_form"):
+                new_medications = st.text_area(
+                    "Enter new medications (one per line or separated by commas):",
+                    placeholder="e.g., Metformin 500mg\nLisinopril 10mg\nAtorvastatin 20mg",
+                    height=100
+                )
+                if st.form_submit_button("✅ Add Medications"):
+                    if new_medications.strip():
+                        # Process new medications
+                        medications_list = [med.strip() for med in new_medications.replace('\n', ',').split(',') if med.strip()]
+                        if medications_list:
+                            current_medications = patient_records.get('Current Medications', '')
+                            if current_medications and current_medications != 'No current medications':
+                                new_medications_str = ', '.join(medications_list)
+                                patient_records['Current Medications'] = f"{current_medications}; {new_medications_str}"
+                            else:
+                                patient_records['Current Medications'] = ', '.join(medications_list)
+                            
+                            st.session_state.patient_records = patient_records
+                            st.success(f"✅ Added {len(medications_list)} new medication(s)!")
+                            st.rerun()
+
+        with st.expander("⚠️ Add New Allergies", expanded=False):
+            with st.form("add_allergies_form"):
+                new_allergies = st.text_area(
+                    "Enter new allergies (one per line or separated by commas):",
+                    placeholder="e.g., Penicillin\nLatex\nShellfish",
+                    height=100
+                )
+                if st.form_submit_button("✅ Add Allergies"):
+                    if new_allergies.strip():
+                        # Process new allergies
+                        allergies_list = [allergy.strip() for allergy in new_allergies.replace('\n', ',').split(',') if allergy.strip()]
+                        if allergies_list:
+                            current_allergies = patient_records.get('Drug Allergies', '')
+                            if current_allergies and current_allergies != 'No known drug allergies':
+                                new_allergies_str = ', '.join(allergies_list)
+                                patient_records['Drug Allergies'] = f"{current_allergies}; {new_allergies_str}"
+                            else:
+                                patient_records['Drug Allergies'] = ', '.join(allergies_list)
+                            
+                            st.session_state.patient_records = patient_records
+                            st.success(f"✅ Added {len(allergies_list)} new allergy/allergies!")
+                            st.rerun()
+
+        with st.expander("🔬 Add New Procedures/Tests", expanded=False):
+            with st.form("add_procedures_form"):
+                new_procedures = st.text_area(
+                    "Enter new procedures or tests (one per line or separated by commas):",
+                    placeholder="e.g., Blood test\nX-ray\nMRI scan\nECG",
+                    height=100
+                )
+                if st.form_submit_button("✅ Add Procedures"):
+                    if new_procedures.strip():
+                        # Process new procedures
+                        procedures_list = [proc.strip() for proc in new_procedures.replace('\n', ',').split(',') if proc.strip()]
+                        if procedures_list:
+                            # Store procedures in a new field or append to existing
+                            current_procedures = patient_records.get('Recent Procedures', '')
+                            if current_procedures:
+                                new_procedures_str = ', '.join(procedures_list)
+                                patient_records['Recent Procedures'] = f"{current_procedures}; {new_procedures_str}"
+                            else:
+                                patient_records['Recent Procedures'] = ', '.join(procedures_list)
+                            
+                            st.session_state.patient_records = patient_records
+                            st.success(f"✅ Added {len(procedures_list)} new procedure(s)!")
+                            st.rerun()
+
+        st.markdown("---")
+        
         if st.button("Continue to Symptoms ➡️"):
-            st.session_state.additional_info = additional_info
             st.session_state.stage = 'symptoms'
             st.rerun()
 
