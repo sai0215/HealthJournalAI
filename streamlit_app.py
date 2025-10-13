@@ -1920,16 +1920,32 @@ elif st.session_state.stage == 'insights':
             
             # File upload
             uploaded_file = st.file_uploader(
-                f"Upload {document_type}",
+                f"Choose {document_type}",
                 type=['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
                 help="Supported formats: PDF, JPG, PNG, DOC, DOCX (Max size: 10MB)"
             )
             
+            # File preview and upload buttons (only show when file is selected)
             if uploaded_file is not None:
-                # Check if this is a new upload (not already processed)
-                upload_key = f"{uploaded_file.name}_{document_type}_{uploaded_file.size}"
+                # File preview
+                file_size_kb = len(uploaded_file.getvalue()) / 1024
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #2196f3;">
+                    <h5 style="margin: 0 0 4px 0; color: #0d47a1; font-size: 14px;">📄 File Selected</h5>
+                    <p style="margin: 0; color: #0d47a1; font-size: 12px;"><strong>{uploaded_file.name}</strong> | Size: {file_size_kb:.1f} KB | Type: {document_type}</p>
+                </div>
+                """, unsafe_allow_html=True)
                 
-                if 'last_upload_key' not in st.session_state or st.session_state.last_upload_key != upload_key:
+                col_btn1, col_btn2 = st.columns([1, 1])
+                with col_btn1:
+                    upload_button = st.button("📤 Upload Document", type="primary", use_container_width=True)
+                with col_btn2:
+                    clear_button = st.button("🗑️ Clear Selection", use_container_width=True)
+                
+                if clear_button:
+                    st.rerun()
+                
+                if upload_button:
                     # File validation
                     file_size = len(uploaded_file.getvalue())
                     max_size = 10 * 1024 * 1024  # 10MB
@@ -1965,10 +1981,26 @@ elif st.session_state.stage == 'insights':
                             }
                             
                             st.session_state.uploaded_documents.append(document_info)
-                            st.session_state.last_upload_key = upload_key
                             
-                            st.success(f"✅ {document_type} uploaded successfully!")
-                            st.info(f"📄 **File:** {uploaded_file.name} | **Size:** {file_size/1024:.1f} KB | **Type:** {document_type}")
+                            # Success message with better styling
+                            st.markdown(f"""
+                            <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); padding: 16px; border-radius: 8px; margin: 12px 0; border-left: 4px solid #28a745;">
+                                <h4 style="margin: 0 0 8px 0; color: #155724; font-size: 16px;">✅ Document Uploaded Successfully!</h4>
+                                <p style="margin: 0; color: #155724; font-size: 14px;"><strong>{uploaded_file.name}</strong> has been added to your Digital Health Locker</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            # Document details
+                            st.markdown(f"""
+                            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 3px solid #007bff;">
+                                <h5 style="margin: 0 0 8px 0; color: #495057; font-size: 14px;">📄 Document Details</h5>
+                                <p style="margin: 2px 0; color: #6c757d; font-size: 12px;"><strong>File Name:</strong> {uploaded_file.name}</p>
+                                <p style="margin: 2px 0; color: #6c757d; font-size: 12px;"><strong>Document Type:</strong> {document_type}</p>
+                                <p style="margin: 2px 0; color: #6c757d; font-size: 12px;"><strong>File Size:</strong> {file_size/1024:.1f} KB</p>
+                                <p style="margin: 2px 0; color: #6c757d; font-size: 12px;"><strong>Upload Date:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
+                                <p style="margin: 2px 0; color: #6c757d; font-size: 12px;"><strong>File Format:</strong> {file_extension.upper()}</p>
+                            </div>
+                            """, unsafe_allow_html=True)
                             
                             # Special validation for insurance cards
                             if document_type == "Insurance Cards":
@@ -1987,6 +2019,9 @@ elif st.session_state.stage == 'insights':
                                     <p style="margin: 0; color: #0c5460; font-size: 12px;">✅ ID format validated | ✅ QR code detected | ✅ Ready for integration</p>
                                 </div>
                                 """, unsafe_allow_html=True)
+                            
+                            # Force refresh to update statistics
+                            st.rerun()
                         else:
                             st.error(f"❌ Invalid file type for {document_type}. Please upload a {', '.join(valid_extensions[document_type])} file.")
         
@@ -2015,13 +2050,6 @@ elif st.session_state.stage == 'insights':
                         <div style="font-size: 18px; color: #495057; font-weight: 700;">{total_docs}</div>
                     </div>
                     """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 12px; border-radius: 6px; margin: 4px 0; border-left: 3px solid #28a745;">
-                        <div style="font-size: 12px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">💾 Total Size</div>
-                        <div style="font-size: 18px; color: #495057; font-weight: 700;">{total_size/1024/1024:.1f} MB</div>
-                    </div>
-                    """, unsafe_allow_html=True)
                 
                 with col_stat2:
                     st.markdown(f"""
@@ -2030,22 +2058,14 @@ elif st.session_state.stage == 'insights':
                         <div style="font-size: 18px; color: #495057; font-weight: 700;">Today</div>
                     </div>
                     """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 12px; border-radius: 6px; margin: 4px 0; border-left: 3px solid #dc3545;">
-                        <div style="font-size: 12px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">🔒 Security</div>
-                        <div style="font-size: 18px; color: #495057; font-weight: 700;">Encrypted</div>
-                    </div>
-                    """, unsafe_allow_html=True)
                 
-                # Document type distribution
-                if doc_types:
-                    import plotly.express as px
-                    fig_docs = px.pie(values=list(doc_types.values()), names=list(doc_types.keys()),
-                                    title="Document Types Distribution",
-                                    color_discrete_sequence=px.colors.qualitative.Set3)
-                    fig_docs.update_layout(title_font_size=14, font_size=12)
-                    st.plotly_chart(fig_docs, use_container_width=True)
+                # Security status
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 12px; border-radius: 6px; margin: 4px 0; border-left: 3px solid #dc3545;">
+                    <div style="font-size: 12px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">🔒 Security</div>
+                    <div style="font-size: 18px; color: #495057; font-weight: 700;">Encrypted</div>
+                </div>
+                """, unsafe_allow_html=True)
             else:
                 st.info("📁 No documents uploaded yet. Upload your first document to get started!")
         
