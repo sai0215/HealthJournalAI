@@ -11,6 +11,7 @@ import os
 from dotenv import load_dotenv
 from patient_registration import PatientRegistration, get_registration_form_data, validate_abha_id_format
 from std_hub.db.mongodb import db_client
+from otp_service import get_otp_service
 
 # Load environment variables
 load_dotenv()
@@ -171,13 +172,20 @@ if 'registration_data' not in st.session_state:
     st.session_state.registration_data = get_registration_form_data()
 if 'show_registration' not in st.session_state:
     st.session_state.show_registration = False
+if 'auth_method' not in st.session_state:
+    st.session_state.auth_method = 'patient_id'
+if 'otp_verified' not in st.session_state:
+    st.session_state.otp_verified = False
+if 'otp_phone' not in st.session_state:
+    st.session_state.otp_phone = None
 
 # Load data
 project = initialize_project()
 patient_data = load_patient_data()
 
-# Initialize patient registration system
+# Initialize patient registration system and OTP service
 patient_registration = PatientRegistration(db_client)
+otp_service = get_otp_service()
 
 # Sidebar
 with st.sidebar:
@@ -206,6 +214,11 @@ with st.sidebar:
     if st.button("🔄 Reset Session"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
+        # Reinitialize default session state
+        st.session_state.stage = 'welcome'
+        st.session_state.auth_method = 'patient_id'
+        st.session_state.otp_verified = False
+        st.session_state.otp_phone = None
         st.rerun()
 
 # Main content
@@ -230,39 +243,151 @@ if st.session_state.stage == 'welcome':
 
         st.markdown("---")
 
-        # Patient ID input
-        st.subheader("📋 Enter Your Patient ID")
-        patient_id_input = st.text_input(
-            "Patient ID / UHID",
-            placeholder="e.g., GEN10001, GEN10002, GEN10003...",
-            help="Enter your unique patient identification number"
+        # Authentication method selection
+        st.subheader("🔐 Patient Authentication")
+        
+        # Authentication method selector
+        auth_options = ["Patient ID / UHID / MRN", "ABHA ID", "Phone Number (OTP)"]
+        auth_values = ["patient_id", "abha", "phone"]
+        
+        # Get current index based on session state
+        try:
+            current_index = auth_values.index(st.session_state.auth_method)
+        except ValueError:
+            current_index = 0  # Default to first option
+        
+        auth_method = st.radio(
+            "Select authentication method:",
+            auth_options,
+            index=current_index
         )
+        
+        # Update session state
+        selected_index = auth_options.index(auth_method)
+        st.session_state.auth_method = auth_values[selected_index]
 
-        col_btn1, col_btn2 = st.columns(2)
+        st.markdown("---")
 
-        with col_btn1:
-            if st.button("Continue ➡️"):
-                if patient_id_input:
-                    # Check if patient exists
-                    exists, patient_data_found = patient_registration.check_patient_exists(
-                        patient_id_input)
-                    if exists:
-                        st.session_state.patient_id = patient_id_input
-                        st.session_state.patient_records = patient_data_found
-                        st.session_state.stage = 'patient_info'
+        # Dynamic input based on authentication method
+        if st.session_state.auth_method == 'phone':
+            # Phone number authentication with OTP
+            st.subheader("📱 Phone Number Authentication")
+            
+            if not st.session_state.otp_verified:
+                phone_input = st.text_input(
+                    "Phone Number",
+                    placeholder="Enter your 10-digit mobile number",
+                    help="Enter your registered mobile number"
+                )
+                
+                col_otp1, col_otp2 = st.columns(2)
+                
+                with col_otp1:
+                    if st.button("📤 Send OTP"):
+                        if phone_input and len(phone_input) == 10 and phone_input.isdigit():
+                            with st.spinner("Sending OTP..."):
+                                success, otp_code, response = otp_service.generate_otp(phone_input)
+                            
+                            if success:
+                                st.session_state.otp_phone = phone_input
+                                st.success(f"✅ OTP sent to {phone_input}")
+                                st.rerun()
+                            else:
+                                st.error(f"❌ {response.get('error', 'Failed to send OTP')}")
+                        else:
+                            st.warning("⚠️ Please enter a valid 10-digit phone number")
+                
+                with col_otp2:
+                    if st.button("🔄 Reset"):
+                        st.session_state.otp_phone = None
+                        st.session_state.otp_verified = False
                         st.rerun()
+                
+                # OTP verification
+                if st.session_state.otp_phone:
+                    st.markdown("---")
+                    st.subheader("🔑 Enter OTP")
+                    otp_input = st.text_input(
+                        "OTP Code",
+                        placeholder="Enter 6-digit OTP",
+                        help="Enter the OTP sent to your phone"
+                    )
+                    
+                    if st.button("✅ Verify OTP"):
+                        if otp_input and len(otp_input) == 6 and otp_input.isdigit():
+                            with st.spinner("Verifying OTP..."):
+                                verified, response = otp_service.verify_otp(st.session_state.otp_phone, otp_input)
+                            
+                            if verified:
+                                st.session_state.otp_verified = True
+                                st.success("✅ OTP verified successfully!")
+                                
+                                # Automatically proceed to patient lookup
+                                with st.spinner("Looking up patient records..."):
+                                    exists, patient_data_found = patient_registration.check_patient_exists(
+                                        st.session_state.otp_phone, 'phone')
+                                
+                                if exists:
+                                    st.session_state.patient_id = patient_data_found.get('Patient ID')
+                                    st.session_state.patient_records = patient_data_found
+                                    st.session_state.stage = 'patient_info'
+                                    st.rerun()
+                                else:
+                                    st.error("❌ No patient record found for this phone number. Please register as a new patient.")
+                                    st.session_state.show_registration = True
+                                    st.rerun()
+                            else:
+                                st.error(f"❌ {response.get('error', 'OTP verification failed')}")
+                        else:
+                            st.warning("⚠️ Please enter a valid 6-digit OTP")
+            
+        else:
+            # Other authentication methods
+            if st.session_state.auth_method == 'patient_id':
+                st.subheader("🆔 Patient ID / UHID / MRN")
+                identifier_input = st.text_input(
+                    "Patient ID / UHID / MRN",
+                    placeholder="e.g., GEN10001, REG2025010112345678, MRN20250101ABC123...",
+                    help="Enter your Patient ID, UHID, or Medical Record Number"
+                )
+            elif st.session_state.auth_method == 'abha':
+                st.subheader("🆔 ABHA ID")
+                identifier_input = st.text_input(
+                    "ABHA ID",
+                    placeholder="Enter your 14-digit ABHA ID",
+                    help="Enter your Ayushman Bharat Health Account ID"
+                )
+
+            col_btn1, col_btn2 = st.columns(2)
+
+            with col_btn1:
+                if st.button("Continue ➡️"):
+                    if identifier_input:
+                        # Check if patient exists
+                        # For patient_id method, use auto-detection to check both Patient ID and MRN
+                        if st.session_state.auth_method == 'patient_id':
+                            exists, patient_data_found = patient_registration.check_patient_exists(
+                                identifier_input, 'auto')
+                        else:
+                            exists, patient_data_found = patient_registration.check_patient_exists(
+                                identifier_input, st.session_state.auth_method)
+                        
+                        if exists:
+                            st.session_state.patient_id = patient_data_found.get('Patient ID')
+                            st.session_state.patient_records = patient_data_found
+                            st.session_state.stage = 'patient_info'
+                            st.rerun()
+                        else:
+                            st.error("❌ Patient not found. Please register as a new patient.")
+                            st.session_state.show_registration = True
+                            st.rerun()
                     else:
-                        st.error(
-                            "❌ Patient not found. Please register as a new patient.")
-                        st.session_state.show_registration = True
-                        st.rerun()
-                else:
-                    st.warning("⚠️ Please enter a Patient ID to continue.")
+                        st.warning("⚠️ Please enter your identifier to continue.")
 
-        with col_btn2:
-            if st.button("🆕 New Patient Registration"):
-                st.session_state.show_registration = True
-                st.rerun()
+            with col_btn2:
+                if st.button("🆕 New Patient Registration"):
+                    st.session_state.show_registration = True
+                    st.rerun()
 
     # Show registration form if requested
     if st.session_state.show_registration:
@@ -389,9 +514,20 @@ elif st.session_state.stage == 'patient_info':
     col1, col2 = st.columns([2, 1])
 
     with col1:
+        # Display patient identifiers
+        patient_records = st.session_state.patient_records
+        mrn = patient_records.get('MRN', 'N/A')
+        
         st.markdown(f"""
-        <div style="background-color: #e3f2fd; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-            <h4 style="margin: 0; color: #1976d2; font-size: 16px;">🆔 Patient ID: {st.session_state.patient_id}</h4>
+        <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h4 style="margin: 0; color: #1976d2; font-size: 16px;">🆔 Patient ID: {st.session_state.patient_id}</h4>
+                </div>
+                <div>
+                    <h4 style="margin: 0; color: #1976d2; font-size: 16px;">📋 MRN: {mrn}</h4>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -636,6 +772,7 @@ elif st.session_state.stage == 'summary':
     with col1:
         st.subheader("👤 Patient Information")
         st.markdown(f"**Patient ID:** {st.session_state.patient_id}")
+        st.markdown(f"**MRN:** {patient_info.get('MRN', 'N/A')}")
         st.markdown(f"**Name:** {patient_info.get('Name', 'N/A')}")
         st.markdown(
             f"**Age:** {patient_info.get('Age', 'N/A')} | **Gender:** {patient_info.get('Gender', 'N/A')}")
@@ -720,6 +857,7 @@ HEALTH ASSESSMENT REPORT
 ========================
 
 Patient ID: {st.session_state.patient_id}
+MRN: {patient_info.get('MRN', 'N/A')}
 Date: {timestamp.strftime("%Y-%m-%d %H:%M:%S")}
 
 PATIENT INFORMATION:
@@ -750,6 +888,11 @@ Generated by Health Assistant
         if st.button("🔄 New Assessment"):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
+            # Reinitialize default session state
+            st.session_state.stage = 'welcome'
+            st.session_state.auth_method = 'patient_id'
+            st.session_state.otp_verified = False
+            st.session_state.otp_phone = None
             st.rerun()
 
     # Footer

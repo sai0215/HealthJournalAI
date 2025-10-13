@@ -106,12 +106,13 @@ class PatientRegistration:
                 # Merge ABHA data with registration data
                 registration_data.update(abha_data)
 
-            # Generate unique patient ID
+            # Generate unique patient ID and MRN
             patient_id = self._generate_patient_id()
+            mrn = self._generate_mrn()
 
             # Create patient record
             patient_record = self._create_patient_record(
-                patient_id, registration_data)
+                patient_id, registration_data, mrn)
 
             # Save to database
             if self.mongodb_client:
@@ -186,8 +187,15 @@ class PatientRegistration:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         random_part = str(uuid.uuid4())[:8].upper()
         return f"REG{timestamp}{random_part}"
+    
+    def _generate_mrn(self) -> str:
+        """Generate unique Medical Record Number (MRN)"""
+        # Generate a unique MRN with timestamp and random component
+        timestamp = datetime.now().strftime("%Y%m%d")
+        random_part = str(uuid.uuid4())[:6].upper()
+        return f"MRN{timestamp}{random_part}"
 
-    def _create_patient_record(self, patient_id: str, data: Dict) -> Dict:
+    def _create_patient_record(self, patient_id: str, data: Dict, mrn: str) -> Dict:
         """Create standardized patient record"""
         # Calculate age from DOB
         dob = data.get("dob")
@@ -201,6 +209,7 @@ class PatientRegistration:
         # Create patient record matching the Excel structure
         patient_record = {
             "Patient ID": patient_id,
+            "MRN": mrn,  # Add MRN field
             "Name": data.get("name", ""),
             "DOB": dob.isoformat() if dob else None,
             "Gender": data.get("gender", ""),
@@ -279,12 +288,13 @@ class PatientRegistration:
         except Exception as e:
             logger.error(f"Failed to save to Excel: {e}")
 
-    def check_patient_exists(self, identifier: str) -> Tuple[bool, Optional[Dict]]:
+    def check_patient_exists(self, identifier: str, identifier_type: str = "auto") -> Tuple[bool, Optional[Dict]]:
         """
         Check if patient exists by various identifiers
 
         Args:
-            identifier: Patient ID, ABHA ID, email, or phone
+            identifier: Patient ID, MRN, ABHA ID, email, or phone
+            identifier_type: Type of identifier ("auto", "patient_id", "mrn", "abha", "email", "phone")
 
         Returns:
             Tuple of (exists, patient_data)
@@ -293,10 +303,21 @@ class PatientRegistration:
             # Check in Excel file first
             df = pd.read_excel("Dummy Patient Data for OCR Use Case.xlsx")
 
-            # Check by Patient ID
+            # If identifier_type is specified, check only that type
+            if identifier_type != "auto":
+                return self._check_by_type(df, identifier, identifier_type)
+
+            # Auto-detect identifier type and check accordingly
+            # Check by Patient ID (UHID)
             patient_row = df[df['Patient ID'].astype(str) == str(identifier)]
             if not patient_row.empty:
                 return True, patient_row.iloc[0].to_dict()
+
+            # Check by MRN (Medical Record Number) - if column exists
+            if 'MRN' in df.columns:
+                mrn_row = df[df['MRN'].astype(str) == str(identifier)]
+                if not mrn_row.empty:
+                    return True, mrn_row.iloc[0].to_dict()
 
             # Check by ABHA ID
             if 'ABHA ID' in df.columns:
@@ -318,6 +339,42 @@ class PatientRegistration:
 
         except Exception as e:
             logger.error(f"Error checking patient existence: {e}")
+            return False, None
+
+    def _check_by_type(self, df: pd.DataFrame, identifier: str, identifier_type: str) -> Tuple[bool, Optional[Dict]]:
+        """Check patient by specific identifier type"""
+        try:
+            if identifier_type == "patient_id":
+                patient_row = df[df['Patient ID'].astype(str) == str(identifier)]
+                if not patient_row.empty:
+                    return True, patient_row.iloc[0].to_dict()
+            
+            elif identifier_type == "mrn":
+                if 'MRN' in df.columns:
+                    mrn_row = df[df['MRN'].astype(str) == str(identifier)]
+                    if not mrn_row.empty:
+                        return True, mrn_row.iloc[0].to_dict()
+            
+            elif identifier_type == "abha":
+                if 'ABHA ID' in df.columns:
+                    abha_row = df[df['ABHA ID'].astype(str) == str(identifier)]
+                    if not abha_row.empty:
+                        return True, abha_row.iloc[0].to_dict()
+            
+            elif identifier_type == "email":
+                email_row = df[df['Email'].astype(str) == str(identifier)]
+                if not email_row.empty:
+                    return True, email_row.iloc[0].to_dict()
+            
+            elif identifier_type == "phone":
+                phone_row = df[df['Phone'].astype(str) == str(identifier)]
+                if not phone_row.empty:
+                    return True, phone_row.iloc[0].to_dict()
+            
+            return False, None
+            
+        except Exception as e:
+            logger.error(f"Error checking patient by type {identifier_type}: {e}")
             return False, None
 
 # Utility functions for the Streamlit app
