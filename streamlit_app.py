@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import pandas as pd
+import re
 from datetime import datetime
 from std_hub.llm import AgentProject
 from openai import OpenAI
@@ -8,6 +9,8 @@ from project import project_init
 import logging
 import os
 from dotenv import load_dotenv
+from patient_registration import PatientRegistration, get_registration_form_data, validate_abha_id_format
+from std_hub.db.mongodb import db_client
 
 # Load environment variables
 load_dotenv()
@@ -164,10 +167,17 @@ if 'symptom_changes' not in st.session_state:
     st.session_state.symptom_changes = ""
 if 'final_summary' not in st.session_state:
     st.session_state.final_summary = None
+if 'registration_data' not in st.session_state:
+    st.session_state.registration_data = get_registration_form_data()
+if 'show_registration' not in st.session_state:
+    st.session_state.show_registration = False
 
 # Load data
 project = initialize_project()
 patient_data = load_patient_data()
+
+# Initialize patient registration system
+patient_registration = PatientRegistration(db_client)
 
 # Sidebar
 with st.sidebar:
@@ -177,6 +187,7 @@ with st.sidebar:
     # Progress indicator
     stages = {
         'welcome': '1️⃣ Patient ID',
+        'registration': '🆕 Registration',
         'patient_info': '2️⃣ Health Info',
         'symptoms': '3️⃣ Symptoms',
         'summary': '4️⃣ Summary'
@@ -227,24 +238,150 @@ if st.session_state.stage == 'welcome':
             help="Enter your unique patient identification number"
         )
 
-        if st.button("Continue ➡️"):
-            if patient_id_input:
-                # Validate patient ID
-                if patient_id_input in patient_data['Patient ID'].astype(str).values:
-                    st.session_state.patient_id = patient_id_input
+        col_btn1, col_btn2 = st.columns(2)
 
-                    # Fetch patient records
-                    patient_row = patient_data[patient_data['Patient ID'].astype(
-                        str) == patient_id_input]
-                    st.session_state.patient_records = patient_row.iloc[0].to_dict(
-                    )
-                    st.session_state.stage = 'patient_info'
-                    st.rerun()
+        with col_btn1:
+            if st.button("Continue ➡️"):
+                if patient_id_input:
+                    # Check if patient exists
+                    exists, patient_data_found = patient_registration.check_patient_exists(
+                        patient_id_input)
+                    if exists:
+                        st.session_state.patient_id = patient_id_input
+                        st.session_state.patient_records = patient_data_found
+                        st.session_state.stage = 'patient_info'
+                        st.rerun()
+                    else:
+                        st.error(
+                            "❌ Patient not found. Please register as a new patient.")
+                        st.session_state.show_registration = True
+                        st.rerun()
                 else:
-                    st.error("❌ Invalid Patient ID. Please check and try again.")
-            else:
-                st.warning("⚠️ Please enter a Patient ID to continue.")
+                    st.warning("⚠️ Please enter a Patient ID to continue.")
 
+        with col_btn2:
+            if st.button("🆕 New Patient Registration"):
+                st.session_state.show_registration = True
+                st.rerun()
+
+    # Show registration form if requested
+    if st.session_state.show_registration:
+        st.markdown("---")
+        st.subheader("🆕 New Patient Registration")
+
+        with st.form("patient_registration_form"):
+            st.markdown("""
+            <div class="info-box">
+            <h4>📋 Registration Information</h4>
+            <p>Please fill in your details. ABHA ID is optional but recommended for KYC verification.</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                name = st.text_input(
+                    "Full Name *", value=st.session_state.registration_data["name"])
+                dob = st.date_input("Date of Birth *", value=None)
+                gender = st.selectbox(
+                    "Gender *", ["", "Male", "Female", "Other"], index=0)
+                phone = st.text_input("Phone Number *", value=st.session_state.registration_data["phone"],
+                                      help="10-digit mobile number")
+                email = st.text_input(
+                    "Email Address *", value=st.session_state.registration_data["email"])
+                address = st.text_area(
+                    "Address", value=st.session_state.registration_data["address"])
+
+            with col2:
+                insurance = st.text_input(
+                    "Insurance Provider", value=st.session_state.registration_data["insurance"])
+                emergency_contact = st.text_input("Emergency Contact", value=st.session_state.registration_data["emergency_contact"],
+                                                  help="Name and phone number")
+                family_history = st.text_area(
+                    "Family Medical History", value=st.session_state.registration_data["family_history"])
+                past_medical_history = st.text_area(
+                    "Past Medical History", value=st.session_state.registration_data["past_medical_history"])
+                current_medications = st.text_area(
+                    "Current Medications", value=st.session_state.registration_data["current_medications"])
+                drug_allergies = st.text_area(
+                    "Drug Allergies", value=st.session_state.registration_data["drug_allergies"])
+
+            # ABHA ID section
+            st.markdown("---")
+            st.subheader("🆔 ABHA (Ayushman Bharat Health Account) - Optional")
+            st.markdown("""
+            <div class="info-box">
+            <p><strong>What is ABHA?</strong> ABHA is a 14-digit unique health ID that helps you access and share your health records digitally across different healthcare providers.</p>
+            <p><strong>Benefits:</strong> Single KYC verification, unified health records, seamless healthcare access.</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            abha_id = st.text_input("ABHA ID (14 digits)", value=st.session_state.registration_data["abha_id"],
+                                    help="Enter your 14-digit ABHA ID for KYC verification")
+
+            if abha_id and not validate_abha_id_format(abha_id):
+                st.error("❌ ABHA ID must be exactly 14 digits")
+
+            # Form submission
+            col_submit1, col_submit2 = st.columns(2)
+
+            with col_submit1:
+                if st.form_submit_button("🔄 Cancel Registration"):
+                    st.session_state.show_registration = False
+                    st.rerun()
+
+            with col_submit2:
+                if st.form_submit_button("✅ Register Patient"):
+                    # Validate required fields
+                    if not all([name, dob, gender, phone, email]):
+                        st.error(
+                            "❌ Please fill in all required fields (marked with *)")
+                    elif not re.match(r'^\d{10}$', phone):
+                        st.error("❌ Phone number must be exactly 10 digits")
+                    elif not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+                        st.error("❌ Please enter a valid email address")
+                    elif abha_id and not validate_abha_id_format(abha_id):
+                        st.error("❌ ABHA ID must be exactly 14 digits")
+                    else:
+                        # Prepare registration data
+                        registration_data = {
+                            "name": name,
+                            "dob": dob.isoformat() if dob else "",
+                            "gender": gender,
+                            "phone": phone,
+                            "email": email,
+                            "address": address,
+                            "insurance": insurance,
+                            "emergency_contact": emergency_contact,
+                            "family_history": family_history,
+                            "past_medical_history": past_medical_history,
+                            "current_medications": current_medications,
+                            "drug_allergies": drug_allergies,
+                            "abha_id": abha_id
+                        }
+
+                        # Register patient
+                        with st.spinner("Registering patient and verifying ABHA..."):
+                            success, patient_id, response = patient_registration.register_new_patient(
+                                registration_data)
+
+                        if success:
+                            st.success(
+                                f"✅ Registration successful! Your Patient ID is: **{patient_id}**")
+                            if response.get("abha_verified"):
+                                st.success(
+                                    "🆔 ABHA verification completed successfully!")
+
+                            # Set patient data and proceed
+                            st.session_state.patient_id = patient_id
+                            st.session_state.patient_records = patient_registration.check_patient_exists(patient_id)[
+                                1]
+                            st.session_state.show_registration = False
+                            st.session_state.stage = 'patient_info'
+                            st.rerun()
+                        else:
+                            st.error(
+                                f"❌ Registration failed: {response.get('error', 'Unknown error')}")
 
 elif st.session_state.stage == 'patient_info':
     st.title("📋 Patient Information Review")

@@ -5,4 +5,5 @@ openai==2.3.0
 pymongo==4.15.3
 python-dotenv==1.0.0
 streamlit==1.40.0
+requests==2.31.0
 
