@@ -1709,7 +1709,7 @@ elif st.session_state.stage == 'insights':
     
     # Action buttons
     st.markdown("---")
-    col_action1, col_action2, col_action3 = st.columns(3)
+    col_action1, col_action2, col_action3, col_action4 = st.columns(4)
     
     with col_action1:
         if st.button("⬅️ Back to Symptoms"):
@@ -1724,6 +1724,158 @@ elif st.session_state.stage == 'insights':
     with col_action3:
         if st.button("🔄 Refresh Dashboard"):
             st.rerun()
+    
+    with col_action4:
+        if st.button("📤 Share with Physician"):
+            st.session_state.show_share_modal = True
+            st.rerun()
+    
+    # Share with Physician Modal
+    if st.session_state.get('show_share_modal', False):
+        st.markdown("---")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #007bff;">
+            <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">📤 Share with Primary Physician</h3>
+            <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 13px;">Share your health insights and medical data with your healthcare provider</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Physician Selection
+        st.subheader("👨‍⚕️ Select Physician")
+        
+        # Sample physician data - in real app, this would come from database
+        physicians = [
+            {"name": "Dr. Sarah Johnson", "specialty": "Internal Medicine", "phone": "+1-555-0101", "email": "sarah.johnson@hospital.com"},
+            {"name": "Dr. Michael Chen", "specialty": "Cardiology", "phone": "+1-555-0102", "email": "michael.chen@hospital.com"},
+            {"name": "Dr. Emily Rodriguez", "specialty": "Endocrinology", "phone": "+1-555-0103", "email": "emily.rodriguez@hospital.com"},
+            {"name": "Dr. James Wilson", "specialty": "Family Medicine", "phone": "+1-555-0104", "email": "james.wilson@hospital.com"},
+            {"name": "Dr. Lisa Thompson", "specialty": "Neurology", "phone": "+1-555-0105", "email": "lisa.thompson@hospital.com"}
+        ]
+        
+        # Physician selection options
+        physician_options = [f"{doc['name']} - {doc['specialty']}" for doc in physicians]
+        selected_physician_idx = st.selectbox(
+            "Choose your primary physician:",
+            range(len(physician_options)),
+            format_func=lambda x: physician_options[x],
+            key="physician_selection"
+        )
+        
+        if selected_physician_idx is not None:
+            selected_physician = physicians[selected_physician_idx]
+            
+            # Display selected physician info
+            st.info(f"Selected: **{selected_physician['name']}** ({selected_physician['specialty']})")
+            
+            # Sharing options
+            st.subheader("📱 Share Options")
+            
+            col_share1, col_share2, col_share3 = st.columns(3)
+            
+            with col_share1:
+                st.markdown("""
+                <div style="text-align: center; padding: 12px; background-color: #ffffff; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <h4 style="margin: 0 0 8px 0; color: #495057; font-size: 16px;">📱 WhatsApp</h4>
+                    <p style="margin: 0; color: #6c757d; font-size: 12px;">Share via WhatsApp</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button("📱 Share via WhatsApp", key="whatsapp_share"):
+                    # Generate WhatsApp message
+                    patient_name = st.session_state.patient_records.get('Name', 'Patient')
+                    patient_id = st.session_state.patient_id
+                    whatsapp_message = f"""
+🏥 *Health Insights Report*
+
+*Patient:* {patient_name}
+*Patient ID:* {patient_id}
+*Date:* {datetime.now().strftime('%Y-%m-%d %H:%M')}
+
+*Health Summary:*
+• Health Score: 85/100
+• Last Visit: 2 days ago
+• Active Medications: {len(st.session_state.patient_records.get('Current Medications', '').split(';')) if st.session_state.patient_records.get('Current Medications') else 0}
+• Known Allergies: {len(st.session_state.patient_records.get('Drug Allergies', '').split(';')) if st.session_state.patient_records.get('Drug Allergies') else 0}
+
+*Recent Symptoms:* {st.session_state.get('symptom_changes', 'None reported')}
+
+Please review the complete dashboard for detailed insights.
+                    """.strip()
+                    
+                    phone_clean = selected_physician['phone'].replace('+', '').replace('-', '')
+                    message_encoded = whatsapp_message.replace(' ', '%20').replace('\n', '%0A')
+                    whatsapp_url = f"https://wa.me/{phone_clean}?text={message_encoded}"
+                    st.markdown(f"[📱 Open WhatsApp]({whatsapp_url})")
+                    st.success("WhatsApp link generated! Click to share.")
+            
+            with col_share2:
+                st.markdown("""
+                <div style="text-align: center; padding: 12px; background-color: #ffffff; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <h4 style="margin: 0 0 8px 0; color: #495057; font-size: 16px;">💬 SMS</h4>
+                    <p style="margin: 0; color: #6c757d; font-size: 12px;">Send SMS message</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button("💬 Send SMS", key="sms_share"):
+                    # Generate SMS message
+                    patient_name = st.session_state.patient_records.get('Name', 'Patient')
+                    patient_id = st.session_state.patient_id
+                    sms_message = f"Health Insights Report for {patient_name} (ID: {patient_id}). Health Score: 85/100. Recent symptoms: {st.session_state.get('symptom_changes', 'None')}. Please review dashboard for details."
+                    
+                    sms_url = f"sms:{selected_physician['phone']}?body={sms_message.replace(' ', '%20')}"
+                    st.markdown(f"[💬 Send SMS]({sms_url})")
+                    st.success("SMS link generated! Click to send.")
+            
+            with col_share3:
+                st.markdown("""
+                <div style="text-align: center; padding: 12px; background-color: #ffffff; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <h4 style="margin: 0 0 8px 0; color: #495057; font-size: 16px;">📧 Email</h4>
+                    <p style="margin: 0; color: #6c757d; font-size: 12px;">Send email report</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button("📧 Send Email", key="email_share"):
+                    # Generate email content
+                    patient_name = st.session_state.patient_records.get('Name', 'Patient')
+                    patient_id = st.session_state.patient_id
+                    email_subject = f"Health Insights Report - {patient_name} (ID: {patient_id})"
+                    email_body = f"""
+Dear Dr. {selected_physician['name'].split()[-1]},
+
+Please find below the health insights report for your patient:
+
+Patient Information:
+- Name: {patient_name}
+- Patient ID: {patient_id}
+- Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+
+Health Summary:
+- Health Score: 85/100
+- Last Visit: 2 days ago
+- Active Medications: {len(st.session_state.patient_records.get('Current Medications', '').split(';')) if st.session_state.patient_records.get('Current Medications') else 0}
+- Known Allergies: {len(st.session_state.patient_records.get('Drug Allergies', '').split(';')) if st.session_state.patient_records.get('Drug Allergies') else 0}
+
+Recent Symptoms: {st.session_state.get('symptom_changes', 'None reported')}
+
+Please review the complete dashboard for detailed insights and trends.
+
+Best regards,
+Health Journal System
+                    """.strip()
+                    
+                    subject_encoded = email_subject.replace(' ', '%20')
+                    body_encoded = email_body.replace(' ', '%20').replace('\n', '%0A')
+                    email_url = f"mailto:{selected_physician['email']}?subject={subject_encoded}&body={body_encoded}"
+                    st.markdown(f"[📧 Send Email]({email_url})")
+                    st.success("Email link generated! Click to send.")
+            
+            # Close modal button
+            st.markdown("---")
+            col_close1, col_close2, col_close3 = st.columns([1, 1, 1])
+            with col_close2:
+                if st.button("❌ Close", key="close_share_modal"):
+                    st.session_state.show_share_modal = False
+                    st.rerun()
 
 elif st.session_state.stage == 'summary':
     st.title("📊 Health Assessment Summary")
