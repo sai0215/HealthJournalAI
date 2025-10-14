@@ -915,7 +915,7 @@ elif st.session_state.stage == 'patient_info':
         """, unsafe_allow_html=True)
         
         # Back button positioned below Review Your Information
-        if st.button("⬅️ Back", use_container_width=True):
+        if st.button("Back", use_container_width=True):
             st.session_state.stage = 'welcome'
             st.rerun()
 
@@ -1231,80 +1231,131 @@ elif st.session_state.stage == 'patient_info':
 
 
 elif st.session_state.stage == 'symptoms':
-    st.title("🩺 Symptom Assessment")
+    st.markdown("""
+    <h1 style="font-size: 28px; color: #2c3e50; margin-bottom: 25px; font-weight: 600; text-align: left;">
+        Symptom Assessment
+    </h1>
+    """, unsafe_allow_html=True)
 
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.markdown(f"### Patient ID: {st.session_state.patient_id}")
+        st.markdown(f"""
+        <div style="font-size: 16px; color: #495057; margin-bottom: 15px; font-weight: 500;">
+            Patient ID: {st.session_state.patient_id}
+        </div>
+        """, unsafe_allow_html=True)
 
-        st.subheader("📝 Current Symptoms")
         st.markdown("""
-        Please describe any symptoms you're experiencing. Be as specific as possible.
-        Include details such as:
-        - When did the symptoms start?
-        - How severe are they (mild, moderate, severe)?
-        - Any triggers or patterns?
-        """)
-
-        symptom_changes = st.text_area(
+        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
+            Current Symptoms
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 1. Describe your symptoms (first)
+        symptom_description = st.text_area(
             "Describe your symptoms:",
-            placeholder="e.g., Persistent fever for 3 days, mild headache in the morning, fatigue throughout the day...",
-            height=150,
-            help="The more details you provide, the better recommendations we can make"
+            placeholder="e.g., headache, fatigue, nausea, body aches...",
+            height=120,
+            help="Describe the symptoms you're experiencing"
         )
+        
+        # 2. How long you had the symptom
+        symptom_duration = st.text_input(
+            "How long have you had the symptoms?",
+            placeholder="e.g., 3 days, 1 week, since this morning...",
+            help="Describe how long you've been experiencing these symptoms"
+        )
+        
+        # 3. Temperature input
+        col_temp1, col_temp2 = st.columns([1.2, 0.8])
+        with col_temp1:
+            temperature = st.number_input(
+                "Temperature (°F):",
+                min_value=95.0,
+                max_value=110.0,
+                value=98.6,
+                step=0.1,
+                help="Enter your current body temperature"
+            )
+        
+        with col_temp2:
+            # Determine fever severity based on temperature
+            if temperature < 100.4:
+                fever_status = "No Fever"
+                fever_range = "Normal: <100.4°F"
+                severity_level = "None"
+            elif temperature < 102.2:
+                fever_status = "Mild Fever"
+                fever_range = "Range: 100.4-102.1°F"
+                severity_level = "Mild"
+            elif temperature < 104.0:
+                fever_status = "Moderate Fever"
+                fever_range = "Range: 100.6-102.2°F"
+                severity_level = "Moderate"
+            else:
+                fever_status = "High Fever"
+                fever_range = "Range: >104.0°F"
+                severity_level = "Severe"
+            
+            # Display fever status box (aligned with temperature input)
+            if temperature >= 100.4:
+                st.markdown(f"""
+                <div style="background-color: #fff3cd; border-left: 3px solid #ffc107; padding: 8px 12px; border-radius: 6px; margin-top: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="color: #856404; font-size: 14px; font-weight: bold;">{fever_status}</span>
+                            <span style="color: #6c757d; font-size: 12px; margin-left: 8px;">{fever_range}</span>
+                        </div>
+                        <span style="font-size: 14px;">🌡️</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # 4. Severity level slider
+        severity_options = ["None", "Mild", "Moderate", "Severe"]
+        current_severity_index = severity_options.index(severity_level) if severity_level in severity_options else 1
+        
+        severity_level = st.select_slider(
+            "Severity level (auto-detected from temperature):",
+            options=severity_options,
+            value=severity_level,
+            help="Select the severity level of your symptoms"
+        )
+        
+        # 5. Any triggers or patterns (last)
+        triggers_patterns = st.text_area(
+            "Any triggers or patterns?",
+            placeholder="e.g., worse in the morning, after eating, during exercise...",
+            height=100,
+            help="Describe any patterns or triggers you've noticed"
+        )
+        
+        # Combine all symptom information
+        symptom_changes = f"Temperature: {temperature}°F, Severity: {severity_level}"
+        if symptom_description:
+            symptom_changes += f", Symptoms: {symptom_description}"
+        if symptom_duration:
+            symptom_changes += f", Duration: {symptom_duration}"
+        if triggers_patterns:
+            symptom_changes += f", Patterns: {triggers_patterns}"
 
         st.markdown("---")
 
-        # Quick symptom selector
-        st.subheader("✅ Quick Symptom Selector")
-        st.markdown("Select any symptoms that apply:")
-
-        col_s1, col_s2, col_s3 = st.columns(3)
-
-        quick_symptoms = []
-        with col_s1:
-            if st.checkbox("🌡️ Fever"):
-                quick_symptoms.append("fever")
-            if st.checkbox("😴 Fatigue"):
-                quick_symptoms.append("fatigue")
-            if st.checkbox("🤕 Headache"):
-                quick_symptoms.append("headache")
-
-        with col_s2:
-            if st.checkbox("🤧 Cough"):
-                quick_symptoms.append("cough")
-            if st.checkbox("❤️ Chest Pain"):
-                quick_symptoms.append("chest pain")
-            if st.checkbox("😣 Body Pain"):
-                quick_symptoms.append("body pain")
-
-        with col_s3:
-            if st.checkbox("😮‍💨 Breathing Issues"):
-                quick_symptoms.append("difficulty breathing")
-            if st.checkbox("🤢 Nausea"):
-                quick_symptoms.append("nausea")
-            if st.checkbox("😵 Dizziness"):
-                quick_symptoms.append("dizziness")
-
-        if quick_symptoms:
-            st.info(f"Selected symptoms: {', '.join(quick_symptoms)}")
-            combined_symptoms = symptom_changes + \
-                " " + ", ".join(quick_symptoms)
-        else:
-            combined_symptoms = symptom_changes
+        # Use only the text area input for symptoms
+        combined_symptoms = symptom_changes
 
         st.markdown("---")
 
         col_btn1, col_btn2 = st.columns(2)
 
         with col_btn1:
-            if st.button("⬅️ Back"):
+            if st.button("Back"):
                 st.session_state.stage = 'patient_info'
                 st.rerun()
 
         with col_btn2:
-            if st.button("📊 Generate Insights ➡️"):
+            if st.button("Generate Insights"):
                 if combined_symptoms.strip():
                     st.session_state.symptom_changes = combined_symptoms
 
