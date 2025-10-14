@@ -81,6 +81,42 @@ st.markdown("""
     h2 {
         color: #34495e;
     }
+    .stMetric {
+        background-color: #f0f2f6;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #e9ecef;
+        text-align: center !important;
+    }
+    .stMetric [data-testid="metric-value"] {
+        font-size: 0.9rem !important;
+        font-weight: 600;
+        text-align: center !important;
+    }
+    .stMetric [data-testid="metric-delta"] {
+        font-size: 0.7rem !important;
+        text-align: center !important;
+    }
+    .stMetric [data-testid="metric-label"] {
+        text-align: center !important;
+    }
+    /* Additional selectors to ensure the styling applies */
+    div[data-testid="metric-container"] {
+        text-align: center !important;
+    }
+    div[data-testid="metric-container"] > div {
+        text-align: center !important;
+    }
+    /* Target the specific metric value elements */
+    .stMetric div[data-testid="metric-value"] {
+        font-size: 0.9rem !important;
+        text-align: center !important;
+    }
+    /* Force center alignment for all metric content */
+    .stMetric * {
+        text-align: center !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -1796,16 +1832,50 @@ elif st.session_state.stage == 'insights':
         col_summary1, col_summary2, col_summary3 = st.columns(3)
         
         with col_summary1:
-            st.metric("🏥 Total Conditions", len(conditions_list) if 'conditions_list' in locals() else 0)
-            st.metric("💊 Active Medications", len(medications_list) if 'medications_list' in locals() else 0)
+            st.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e9ecef; text-align: center;">
+                <div style="font-size: 14px; color: #495057; margin-bottom: 8px;">🏥 Total Conditions</div>
+                <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">{len(conditions_list) if 'conditions_list' in locals() else 0}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e9ecef; text-align: center;">
+                <div style="font-size: 14px; color: #495057; margin-bottom: 8px;">💊 Active Medications</div>
+                <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">{len(medications_list) if 'medications_list' in locals() else 0}</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col_summary2:
-            st.metric("⚠️ Known Allergies", len(allergies_list) if 'allergies_list' in locals() else 0)
-            st.metric("🔬 Recent Procedures", len(procedures_list) if 'procedures_list' in locals() else 0)
+            st.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e9ecef; text-align: center;">
+                <div style="font-size: 14px; color: #495057; margin-bottom: 8px;">⚠️ Known Allergies</div>
+                <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">{len(allergies_list) if 'allergies_list' in locals() else 0}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e9ecef; text-align: center;">
+                <div style="font-size: 14px; color: #495057; margin-bottom: 8px;">🔬 Recent Procedures</div>
+                <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">{len(procedures_list) if 'procedures_list' in locals() else 0}</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col_summary3:
-            st.metric("📅 Days Since Last Visit", np.random.randint(1, 30))
-            st.metric("🎯 Health Score", "85/100", "↑ 5")
+            st.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e9ecef; text-align: center;">
+                <div style="font-size: 14px; color: #495057; margin-bottom: 8px;">📅 Days Since Last Visit</div>
+                <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">{np.random.randint(1, 30)}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e9ecef; text-align: center;">
+                <div style="font-size: 14px; color: #495057; margin-bottom: 8px;">🎯 Health Score</div>
+                <div style="font-size: 18px; font-weight: 600; color: #2c3e50;">85/100</div>
+                <div style="font-size: 12px; color: #28a745; margin-top: 4px;">↑ 5</div>
+            </div>
+            """, unsafe_allow_html=True)
     
     with tab6:
         st.markdown("""
