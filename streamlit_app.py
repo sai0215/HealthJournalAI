@@ -48,6 +48,48 @@ st.markdown("""
         font-size: 1.1rem;
         font-weight: bold;
     }
+    /* Style for + buttons specifically */
+    button[data-testid="baseButton-secondary"] {
+        background-color: #007bff !important;
+        color: white !important;
+        border: 2px solid #007bff !important;
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    button[data-testid="baseButton-secondary"]:hover {
+        background-color: #0056b3 !important;
+        border-color: #0056b3 !important;
+    }
+    /* Alternative selectors for + buttons */
+    .stButton button[title*="Add"] {
+        background-color: #007bff !important;
+        color: white !important;
+        border: 2px solid #007bff !important;
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+    /* Target buttons with + text specifically */
+    button:contains("+") {
+        background-color: #007bff !important;
+        color: white !important;
+        border: 2px solid #007bff !important;
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+    }
     .stButton>button:hover {
         background-color: #45a049;
     }
@@ -283,6 +325,14 @@ if 'consent_given' not in st.session_state:
     st.session_state.consent_given = False
 if 'duplicate_confirmations' not in st.session_state:
     st.session_state.duplicate_confirmations = []
+if 'show_add_allergies' not in st.session_state:
+    st.session_state.show_add_allergies = False
+if 'show_add_conditions' not in st.session_state:
+    st.session_state.show_add_conditions = False
+if 'show_add_medications' not in st.session_state:
+    st.session_state.show_add_medications = False
+if 'show_add_procedures' not in st.session_state:
+    st.session_state.show_add_procedures = False
 
 # Load data
 project = initialize_project()
@@ -331,6 +381,10 @@ with st.sidebar:
         st.session_state.medical_sources = None
         st.session_state.consent_given = False
         st.session_state.duplicate_confirmations = []
+        st.session_state.show_add_allergies = False
+        st.session_state.show_add_conditions = False
+        st.session_state.show_add_medications = False
+        st.session_state.show_add_procedures = False
         st.rerun()
 
 # Main content
@@ -842,9 +896,28 @@ elif st.session_state.stage == 'reconciliation':
             st.rerun()
 
 elif st.session_state.stage == 'patient_info':
-    st.title("📋 Patient Information Review")
+    st.markdown("""
+    <h2 style="font-size: 24px; margin-bottom: 20px; color: #2c3e50;">Patient Information Review</h2>
+    """, unsafe_allow_html=True)
 
     col1, col2 = st.columns([2, 1])
+
+    with col2:
+        # Review Information Section - positioned in the same location as "Why Reconcile Medical History?"
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 15px; margin: 20px 0; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
+            <div style="text-align: center; color: white;">
+                <h3 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📌 Review Your Information</h3>
+                <p style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;">Please verify that your medical records are correct.</p>
+                <p style="margin: 0; font-size: 13px; opacity: 0.8;">If you notice any discrepancies, please contact your healthcare provider.</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Back button positioned below Review Your Information
+        if st.button("⬅️ Back", use_container_width=True):
+            st.session_state.stage = 'welcome'
+            st.rerun()
 
     with col1:
         # Display patient identifiers
@@ -977,127 +1050,178 @@ elif st.session_state.stage == 'patient_info':
             """, unsafe_allow_html=True)
 
         # Create elegant medical history display with appealing background
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 12px; margin: 15px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #28a745; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">💊 Drug Allergies</h4>
-                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{allergies}</p>
-                </div>
-                <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #17a2b8; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">📋 Past Medical History</h4>
-                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{history}</p>
-                </div>
-                <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #6f42c1; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">💊 Current Medications</h4>
-                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{medications}</p>
-                </div>
-                <div style="flex: 1; min-width: 250px; background-color: rgba(255,255,255,0.9); padding: 18px; border-radius: 10px; border-left: 5px solid #fd7e14; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <h4 style="margin: 0 0 12px 0; color: #2c3e50; font-size: 15px; font-weight: 600;">🔬 Recent Procedures</h4>
-                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">{recent_procedures}</p>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("---")
-
-        # Add new items section integrated with medical history
-        st.subheader("➕ Add New Medical Information")
+        # Medical History Cards with inline add functionality - 2 column layout for medical history
+        col1, col2 = st.columns([1, 1])
         
-        # Create expandable sections for adding new items
-        with st.expander("📋 Add New Medical Conditions", expanded=False):
-            with st.form("add_conditions_form"):
-                new_conditions = st.text_area(
-                    "Enter new medical conditions (one per line or separated by commas):",
-                    placeholder="e.g., High blood pressure\nDiabetes\nAsthma",
-                    height=100
-                )
-                if st.form_submit_button("✅ Add Conditions"):
-                    if new_conditions.strip():
-                        # Process new conditions
-                        conditions_list = [cond.strip() for cond in new_conditions.replace('\n', ',').split(',') if cond.strip()]
-                        if conditions_list:
-                            current_conditions = patient_records.get('Past Medical History', '')
-                            if current_conditions and current_conditions != 'No significant medical history':
-                                new_conditions_str = ', '.join(conditions_list)
-                                patient_records['Past Medical History'] = f"{current_conditions}; {new_conditions_str}"
-                            else:
-                                patient_records['Past Medical History'] = ', '.join(conditions_list)
-                            
-                            st.session_state.patient_records = patient_records
-                            st.success(f"✅ Added {len(conditions_list)} new condition(s)!")
-                            st.rerun()
-
-        with st.expander("💊 Add New Medications", expanded=False):
-            with st.form("add_medications_form"):
-                new_medications = st.text_area(
-                    "Enter new medications (one per line or separated by commas):",
-                    placeholder="e.g., Metformin 500mg\nLisinopril 10mg\nAtorvastatin 20mg",
-                    height=100
-                )
-                if st.form_submit_button("✅ Add Medications"):
-                    if new_medications.strip():
-                        # Process new medications
-                        medications_list = [med.strip() for med in new_medications.replace('\n', ',').split(',') if med.strip()]
-                        if medications_list:
-                            current_medications = patient_records.get('Current Medications', '')
-                            if current_medications and current_medications != 'No current medications':
-                                new_medications_str = ', '.join(medications_list)
-                                patient_records['Current Medications'] = f"{current_medications}; {new_medications_str}"
-                            else:
-                                patient_records['Current Medications'] = ', '.join(medications_list)
-                            
-                            st.session_state.patient_records = patient_records
-                            st.success(f"✅ Added {len(medications_list)} new medication(s)!")
-                            st.rerun()
-
-        with st.expander("⚠️ Add New Allergies", expanded=False):
-            with st.form("add_allergies_form"):
-                new_allergies = st.text_area(
-                    "Enter new allergies (one per line or separated by commas):",
-                    placeholder="e.g., Penicillin\nLatex\nShellfish",
-                    height=100
-                )
-                if st.form_submit_button("✅ Add Allergies"):
-                    if new_allergies.strip():
-                        # Process new allergies
-                        allergies_list = [allergy.strip() for allergy in new_allergies.replace('\n', ',').split(',') if allergy.strip()]
-                        if allergies_list:
-                            current_allergies = patient_records.get('Drug Allergies', '')
-                            if current_allergies and current_allergies != 'No known drug allergies':
-                                new_allergies_str = ', '.join(allergies_list)
-                                patient_records['Drug Allergies'] = f"{current_allergies}; {new_allergies_str}"
-                            else:
-                                patient_records['Drug Allergies'] = ', '.join(allergies_list)
-                            
-                            st.session_state.patient_records = patient_records
-                            st.success(f"✅ Added {len(allergies_list)} new allergy/allergies!")
-                            st.rerun()
-
-        with st.expander("🔬 Add New Procedures/Tests", expanded=False):
-            with st.form("add_procedures_form"):
-                new_procedures = st.text_area(
-                    "Enter new procedures or tests (one per line or separated by commas):",
-                    placeholder="e.g., Blood test\nX-ray\nMRI scan\nECG",
-                    height=100
-                )
-                if st.form_submit_button("✅ Add Procedures"):
-                    if new_procedures.strip():
-                        # Process new procedures
-                        procedures_list = [proc.strip() for proc in new_procedures.replace('\n', ',').split(',') if proc.strip()]
-                        if procedures_list:
-                            # Store procedures in a new field or append to existing
-                            current_procedures = patient_records.get('Recent Procedures', '')
-                            if current_procedures:
-                                new_procedures_str = ', '.join(procedures_list)
-                                patient_records['Recent Procedures'] = f"{current_procedures}; {new_procedures_str}"
-                            else:
-                                patient_records['Recent Procedures'] = ', '.join(procedures_list)
-                            
-                            st.session_state.patient_records = patient_records
-                            st.success(f"✅ Added {len(procedures_list)} new procedure(s)!")
-                            st.rerun()
+        with col1:
+            # Drug Allergies Card
+            st.markdown(f"""
+            <div style="background-color: rgba(255,255,255,0.9); padding: 20px; border-radius: 12px; border-left: 5px solid #28a745; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 600;">Drug Allergies</h4>
+                </div>
+                <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6; min-height: 60px;">{allergies}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Add allergies form
+            if st.button("➕ Add Allergies", key="add_allergies_btn", help="Add new allergies"):
+                st.session_state.show_add_allergies = not st.session_state.show_add_allergies
+            
+            if st.session_state.get('show_add_allergies', False):
+                with st.form("add_allergies_form"):
+                    st.markdown("**Add New Allergies**")
+                    new_allergies = st.text_area(
+                        "Enter new allergies (one per line or separated by commas):",
+                        placeholder="e.g., Penicillin\nLatex\nShellfish",
+                        height=80,
+                        label_visibility="collapsed"
+                    )
+                    if st.form_submit_button("Add Allergies", type="primary"):
+                        if new_allergies.strip():
+                            allergies_list = [allergy.strip() for allergy in new_allergies.replace('\n', ',').split(',') if allergy.strip()]
+                            if allergies_list:
+                                current_allergies = patient_records.get('Drug Allergies', '')
+                                if current_allergies and current_allergies != 'No known drug allergies':
+                                    new_allergies_str = ', '.join(allergies_list)
+                                    patient_records['Drug Allergies'] = f"{current_allergies}; {new_allergies_str}"
+                                else:
+                                    patient_records['Drug Allergies'] = ', '.join(allergies_list)
+                                
+                                st.session_state.patient_records = patient_records
+                                st.session_state.show_add_allergies = False
+                                st.success(f"Added {len(allergies_list)} new allergy/allergies!")
+                                st.rerun()
+                    if st.form_submit_button("Cancel"):
+                        st.session_state.show_add_allergies = False
+                        st.rerun()
+            
+            # Past Medical History Card
+            st.markdown(f"""
+            <div style="background-color: rgba(255,255,255,0.9); padding: 20px; border-radius: 12px; border-left: 5px solid #17a2b8; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 600;">Past Medical History</h4>
+                </div>
+                <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6; min-height: 60px;">{history}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Add conditions form
+            if st.button("➕ Add Conditions", key="add_conditions_btn", help="Add new medical conditions"):
+                st.session_state.show_add_conditions = not st.session_state.show_add_conditions
+            
+            if st.session_state.get('show_add_conditions', False):
+                with st.form("add_conditions_form"):
+                    st.markdown("**Add New Medical Conditions**")
+                    new_conditions = st.text_area(
+                        "Enter new medical conditions (one per line or separated by commas):",
+                        placeholder="e.g., High blood pressure\nDiabetes\nAsthma",
+                        height=80,
+                        label_visibility="collapsed"
+                    )
+                    if st.form_submit_button("Add Conditions", type="primary"):
+                        if new_conditions.strip():
+                            conditions_list = [cond.strip() for cond in new_conditions.replace('\n', ',').split(',') if cond.strip()]
+                            if conditions_list:
+                                current_conditions = patient_records.get('Past Medical History', '')
+                                if current_conditions and current_conditions != 'No significant medical history':
+                                    new_conditions_str = ', '.join(conditions_list)
+                                    patient_records['Past Medical History'] = f"{current_conditions}; {new_conditions_str}"
+                                else:
+                                    patient_records['Past Medical History'] = ', '.join(conditions_list)
+                                
+                                st.session_state.patient_records = patient_records
+                                st.session_state.show_add_conditions = False
+                                st.success(f"Added {len(conditions_list)} new condition(s)!")
+                                st.rerun()
+                    if st.form_submit_button("Cancel"):
+                        st.session_state.show_add_conditions = False
+                        st.rerun()
+        
+        with col2:
+            # Current Medications Card
+            st.markdown(f"""
+            <div style="background-color: rgba(255,255,255,0.9); padding: 20px; border-radius: 12px; border-left: 5px solid #6f42c1; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 600;">Current Medications</h4>
+                </div>
+                <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6; min-height: 60px;">{medications}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Add medications form
+            if st.button("➕ Add Medications", key="add_medications_btn", help="Add new medications"):
+                st.session_state.show_add_medications = not st.session_state.show_add_medications
+            
+            if st.session_state.get('show_add_medications', False):
+                with st.form("add_medications_form"):
+                    st.markdown("**Add New Medications**")
+                    new_medications = st.text_area(
+                        "Enter new medications (one per line or separated by commas):",
+                        placeholder="e.g., Metformin 500mg\nLisinopril 10mg\nAtorvastatin 20mg",
+                        height=80,
+                        label_visibility="collapsed"
+                    )
+                    if st.form_submit_button("Add Medications", type="primary"):
+                        if new_medications.strip():
+                            medications_list = [med.strip() for med in new_medications.replace('\n', ',').split(',') if med.strip()]
+                            if medications_list:
+                                current_medications = patient_records.get('Current Medications', '')
+                                if current_medications and current_medications != 'No current medications':
+                                    new_medications_str = ', '.join(medications_list)
+                                    patient_records['Current Medications'] = f"{current_medications}; {new_medications_str}"
+                                else:
+                                    patient_records['Current Medications'] = ', '.join(medications_list)
+                                
+                                st.session_state.patient_records = patient_records
+                                st.session_state.show_add_medications = False
+                                st.success(f"Added {len(medications_list)} new medication(s)!")
+                                st.rerun()
+                    if st.form_submit_button("Cancel"):
+                        st.session_state.show_add_medications = False
+                        st.rerun()
+            
+            # Recent Procedures Card
+            st.markdown(f"""
+            <div style="background-color: rgba(255,255,255,0.9); padding: 20px; border-radius: 12px; border-left: 5px solid #fd7e14; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 600;">Recent Procedures</h4>
+                </div>
+                <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6; min-height: 60px;">{recent_procedures}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Add procedures form
+            if st.button("➕ Add Procedures", key="add_procedures_btn", help="Add new procedures"):
+                st.session_state.show_add_procedures = not st.session_state.show_add_procedures
+            
+            if st.session_state.get('show_add_procedures', False):
+                with st.form("add_procedures_form"):
+                    st.markdown("**Add New Procedures**")
+                    new_procedures = st.text_area(
+                        "Enter new procedures or tests (one per line or separated by commas):",
+                        placeholder="e.g., Blood test\nX-ray\nMRI scan\nECG",
+                        height=80,
+                        label_visibility="collapsed"
+                    )
+                    if st.form_submit_button("Add Procedures", type="primary"):
+                        if new_procedures.strip():
+                            procedures_list = [proc.strip() for proc in new_procedures.replace('\n', ',').split(',') if proc.strip()]
+                            if procedures_list:
+                                current_procedures = patient_records.get('Recent Procedures', '')
+                                if current_procedures:
+                                    new_procedures_str = ', '.join(procedures_list)
+                                    patient_records['Recent Procedures'] = f"{current_procedures}; {new_procedures_str}"
+                                else:
+                                    patient_records['Recent Procedures'] = ', '.join(procedures_list)
+                                
+                                st.session_state.patient_records = patient_records
+                                st.session_state.show_add_procedures = False
+                                st.success(f"Added {len(procedures_list)} new procedure(s)!")
+                                st.rerun()
+                    if st.form_submit_button("Cancel"):
+                        st.session_state.show_add_procedures = False
+                        st.rerun()
 
         st.markdown("---")
 
@@ -1105,18 +1229,6 @@ elif st.session_state.stage == 'patient_info':
             st.session_state.stage = 'symptoms'
             st.rerun()
 
-    with col2:
-        st.markdown("""
-        <div class="info-box">
-        <h4>📌 Review Your Information</h4>
-        <p>Please verify that your medical records are correct.</p>
-        <p>If you notice any discrepancies, please contact your healthcare provider.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("⬅️ Back"):
-            st.session_state.stage = 'welcome'
-            st.rerun()
 
 elif st.session_state.stage == 'symptoms':
     st.title("🩺 Symptom Assessment")
