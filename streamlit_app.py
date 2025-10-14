@@ -302,7 +302,7 @@ with st.sidebar:
     stages = {
         'welcome': '1️⃣ Patient ID',
         'registration': '🆕 Registration',
-        'reconciliation': '🔄 Medical History',
+        'reconciliation': 'Medical History',
         'patient_info': '2️⃣ Health Info',
         'symptoms': '3️⃣ Symptoms',
         'insights': '📊 Insights Dashboard',
@@ -623,14 +623,14 @@ if st.session_state.stage == 'welcome':
                                 f"Registration failed: {response.get('error', 'Unknown error')}")
 
 elif st.session_state.stage == 'reconciliation':
-    st.title("🔄 Medical History Reconciliation")
+    st.title("Medical History Reconciliation")
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
         st.markdown(f"""
         <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-            <h4 style="margin: 0; color: #1976d2; font-size: 16px;">🆔 Patient ID: {st.session_state.patient_id}</h4>
+            <h4 style="margin: 0; color: #1976d2; font-size: 16px;">Patient ID: {st.session_state.patient_id}</h4>
         </div>
         """, unsafe_allow_html=True)
         
@@ -644,7 +644,7 @@ elif st.session_state.stage == 'reconciliation':
         
         st.markdown("""
         <div class="info-box">
-        <h4>📋 Medical History Collection</h4>
+        <h4>Medical History Collection</h4>
         <p>We found your medical records at the following healthcare providers. 
         To provide you with comprehensive care, we need your consent to collect and reconcile 
         your medical history from these sources.</p>
@@ -652,28 +652,28 @@ elif st.session_state.stage == 'reconciliation':
         """, unsafe_allow_html=True)
         
         # Display hospital sources
-        st.subheader("🏥 Healthcare Providers with Your Records")
+        st.subheader("Healthcare Providers with Your Records")
         
         for i, source in enumerate(sources):
-            with st.expander(f"🏥 {source['name']} - {source['location']}", expanded=True):
+            with st.expander(f"{source['name']} - {source['location']}", expanded=True):
                 col_a, col_b = st.columns(2)
                 with col_a:
                     st.write(f"**Location:** {source['location']}")
                     st.write(f"**Last Visit:** {source['last_visit']}")
                 with col_b:
                     st.write(f"**Records:** {source['records_count']} medical records")
-                    st.write(f"**Status:** ✅ Records Available")
+                    st.write(f"**Status:** Records Available")
         
         # Consent form
         st.markdown("---")
-        st.subheader("📝 Consent for Medical History Collection")
+        st.subheader("Consent for Medical History Collection")
         
         consent_data = medical_reconciliation.get_consent_form_data(
             st.session_state.patient_id, sources)
         
         st.markdown(f"""
         <div class="warning-box">
-        <h4>🔒 Data Collection Consent</h4>
+        <h4>Data Collection Consent</h4>
         <p><strong>Purpose:</strong> {consent_data['purpose']}</p>
         <p><strong>Data Sources:</strong> {', '.join(consent_data['data_sources'])}</p>
         <p><strong>Data Types:</strong> {', '.join(consent_data['data_types'])}</p>
@@ -705,22 +705,22 @@ elif st.session_state.stage == 'reconciliation':
             # Show duplicates if any
             if medical_history.get('duplicates'):
                 st.markdown("---")
-                st.subheader("⚠️ Duplicate Records Detected")
+                st.subheader("Duplicate Patient Records Detected")
                 
                 st.markdown("""
                 <div class="warning-box">
-                <p>We found some duplicate medical records across different hospitals. 
-                Please confirm which records you want to keep.</p>
+                <p>We found duplicate patient records across different hospitals. 
+                Please confirm which patient record you want to keep as your primary record.</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
                 for i, duplicate in enumerate(medical_history['duplicates']):
-                    st.write(f"**{duplicate['type'].title()}:** {duplicate['value']} (found in {duplicate['count']} hospitals)")
+                    st.write(f"**Patient Record:** {duplicate['value']} (found in {duplicate['count']} hospitals)")
                     st.write(f"**Sources:** {', '.join(duplicate['sources'])}")
                     
                     # Confirmation for each duplicate
                     confirm = st.radio(
-                        f"Keep {duplicate['value']} from:",
+                        f"Keep patient record from:",
                         duplicate['sources'],
                         key=f"duplicate_{duplicate['type']}_{duplicate['value']}_{i}"
                     )
@@ -744,11 +744,11 @@ elif st.session_state.stage == 'reconciliation':
             
             # Show collected medical history summary
             st.markdown("---")
-            st.subheader("📋 Collected Medical History Summary")
+            st.subheader("Collected Medical History Summary")
             
             # Show duplicate confirmations if any
             if st.session_state.duplicate_confirmations:
-                st.info("ℹ️ **Note:** Duplicate items will be resolved based on your selections above.")
+                st.info("**Note:** Duplicate patient records will be resolved based on your selections above.")
             
             col_sum1, col_sum2 = st.columns(2)
             with col_sum1:
@@ -777,7 +777,7 @@ elif st.session_state.stage == 'reconciliation':
             col_btn1, col_btn2 = st.columns(2)
             
             with col_btn1:
-                if st.button("🔄 Reconcile Medical History"):
+                if st.button("Reconcile Medical History"):
                     if consent_given:
                         result = medical_reconciliation.process_consent_response(
                             st.session_state.patient_id, 
@@ -786,7 +786,7 @@ elif st.session_state.stage == 'reconciliation':
                         )
                         
                         if result['success']:
-                            st.success("✅ Medical history reconciliation completed!")
+                            st.success("Medical history reconciliation completed!")
                             
                             # Create final reconciled history based on duplicate confirmations
                             final_medical_history = medical_reconciliation.create_final_reconciled_history(
@@ -799,23 +799,23 @@ elif st.session_state.stage == 'reconciliation':
                             st.session_state.stage = 'patient_info'
                             st.rerun()
                         else:
-                            st.error(f"❌ {result['message']}")
+                            st.error(f"{result['message']}")
                     else:
-                        st.warning("⚠️ Please provide consent to proceed")
+                        st.warning("Please provide consent to proceed")
             
             with col_btn2:
-                if st.button("⏭️ Skip Reconciliation"):
-                    st.info("ℹ️ Skipping medical history reconciliation. You can reconcile later.")
+                if st.button("Skip Reconciliation"):
+                    st.info("Skipping medical history reconciliation. You can reconcile later.")
                     st.session_state.stage = 'patient_info'
                     st.rerun()
         
         else:
-            st.warning("⚠️ Consent is required to reconcile your medical history")
+            st.warning("Consent is required to reconcile your medical history")
     
     with col2:
         st.markdown("""
         <div class="info-box">
-        <h4>🔄 Why Reconcile Medical History?</h4>
+        <h4>Why Reconcile Medical History?</h4>
         <ul>
             <li><strong>Complete Picture:</strong> Get a comprehensive view of your health</li>
             <li><strong>Better Care:</strong> Help doctors make informed decisions</li>
@@ -827,7 +827,7 @@ elif st.session_state.stage == 'reconciliation':
         
         st.markdown("""
         <div class="info-box">
-        <h4>🔒 Your Privacy Rights</h4>
+        <h4>Your Privacy Rights</h4>
         <ul>
             <li>Right to access your records</li>
             <li>Right to request corrections</li>

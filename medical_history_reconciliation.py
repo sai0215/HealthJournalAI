@@ -135,6 +135,8 @@ class MedicalHistoryReconciliation:
             "hospital_name": source_info["name"],
             "location": source_info["location"],
             "last_visit": source_info["last_visit"],
+            "patient_id": patient_id,  # Add patient ID for duplicate detection
+            "patient_name": f"Patient {patient_id}",  # Add patient name for duplicate detection
             "conditions": conditions,
             "medications": medications,
             "procedures": procedures,
@@ -144,42 +146,52 @@ class MedicalHistoryReconciliation:
         return source_data
 
     def _detect_duplicates(self, consolidated_history: Dict) -> Dict:
-        """Detect duplicate entries across sources"""
+        """Detect duplicate patient records across sources"""
         duplicates = []
         
-        # Check for duplicate conditions
-        conditions = consolidated_history["conditions"]
-        condition_counts = {}
-        for condition in conditions:
-            condition_counts[condition] = condition_counts.get(condition, 0) + 1
+        # Check for duplicate patient records (same patient ID across multiple hospitals)
+        sources = consolidated_history["sources"]
+        patient_id_counts = {}
         
-        for condition, count in condition_counts.items():
-            if count > 1:
+        # Count how many hospitals have records for the same patient
+        for source in sources:
+            patient_id = source.get("patient_id", "Unknown")
+            if patient_id not in patient_id_counts:
+                patient_id_counts[patient_id] = []
+            patient_id_counts[patient_id].append(source["hospital_name"])
+        
+        # Identify duplicate patient records
+        for patient_id, hospitals in patient_id_counts.items():
+            if len(hospitals) > 1:
                 duplicates.append({
-                    "type": "condition",
-                    "value": condition,
-                    "count": count,
-                    "sources": [s["hospital_name"] for s in consolidated_history["sources"]]
+                    "type": "patient_record",
+                    "value": f"Patient ID: {patient_id}",
+                    "count": len(hospitals),
+                    "sources": hospitals
                 })
         
-        # Check for duplicate medications
-        medications = consolidated_history["medications"]
-        medication_counts = {}
-        for medication in medications:
-            medication_counts[medication] = medication_counts.get(medication, 0) + 1
+        # If no duplicate patient records found, check for potential duplicates based on name/DOB
+        if not duplicates:
+            # Check for potential duplicate patients with same name and similar details
+            patient_names = {}
+            for source in sources:
+                patient_name = source.get("patient_name", "Unknown")
+                if patient_name not in patient_names:
+                    patient_names[patient_name] = []
+                patient_names[patient_name].append(source["hospital_name"])
+            
+            for patient_name, hospitals in patient_names.items():
+                if len(hospitals) > 1:
+                    duplicates.append({
+                        "type": "patient_record",
+                        "value": f"Patient: {patient_name}",
+                        "count": len(hospitals),
+                        "sources": hospitals
+                    })
         
-        for medication, count in medication_counts.items():
-            if count > 1:
-                duplicates.append({
-                    "type": "medication",
-                    "value": medication,
-                    "count": count,
-                    "sources": [s["hospital_name"] for s in consolidated_history["sources"]]
-                })
-        
-        # Remove duplicates from main lists
-        consolidated_history["conditions"] = list(set(conditions))
-        consolidated_history["medications"] = list(set(medications))
+        # Remove duplicates from main lists (keep unique conditions and medications)
+        consolidated_history["conditions"] = list(set(consolidated_history["conditions"]))
+        consolidated_history["medications"] = list(set(consolidated_history["medications"]))
         consolidated_history["duplicates"] = duplicates
         
         return consolidated_history
