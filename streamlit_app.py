@@ -356,10 +356,10 @@ if st.session_state.stage == 'welcome':
         st.markdown("---")
 
         # Authentication method selection
-        st.subheader("🔐 Patient Authentication")
+        st.subheader("Access Your Health Records")
         
         # Authentication method selector
-        auth_options = ["Patient ID / UHID / MRN", "ABHA ID", "Phone Number (OTP)"]
+        auth_options = ["Patient ID / UHID / MRN", "ABHA ID", "Phone Number"]
         auth_values = ["patient_id", "abha", "phone"]
         
         # Get current index based on session state
@@ -369,7 +369,7 @@ if st.session_state.stage == 'welcome':
             current_index = 0  # Default to first option
         
         auth_method = st.radio(
-            "Select authentication method:",
+            "How would you like to access your records?",
             auth_options,
             index=current_index
         )
@@ -383,7 +383,7 @@ if st.session_state.stage == 'welcome':
         # Dynamic input based on authentication method
         if st.session_state.auth_method == 'phone':
             # Phone number authentication with OTP
-            st.subheader("📱 Phone Number Authentication")
+            st.subheader("Verify with Phone Number")
             
             if not st.session_state.otp_verified:
                 phone_input = st.text_input(
@@ -395,22 +395,22 @@ if st.session_state.stage == 'welcome':
                 col_otp1, col_otp2 = st.columns(2)
                 
                 with col_otp1:
-                    if st.button("📤 Send OTP"):
+                    if st.button("Send Verification Code"):
                         if phone_input and len(phone_input) == 10 and phone_input.isdigit():
-                            with st.spinner("Sending OTP..."):
+                            with st.spinner("Sending verification code..."):
                                 success, otp_code, response = otp_service.generate_otp(phone_input)
                             
                             if success:
                                 st.session_state.otp_phone = phone_input
-                                st.success(f"✅ OTP sent to {phone_input}")
+                                st.success(f"Verification code sent to {phone_input}")
                                 st.rerun()
                             else:
-                                st.error(f"❌ {response.get('error', 'Failed to send OTP')}")
+                                st.error(f"{response.get('error', 'Failed to send verification code')}")
                         else:
-                            st.warning("⚠️ Please enter a valid 10-digit phone number")
+                            st.warning("Please enter a valid 10-digit phone number")
                 
                 with col_otp2:
-                    if st.button("🔄 Reset"):
+                    if st.button("Reset"):
                         st.session_state.otp_phone = None
                         st.session_state.otp_verified = False
                         st.rerun()
@@ -418,21 +418,21 @@ if st.session_state.stage == 'welcome':
                 # OTP verification
                 if st.session_state.otp_phone:
                     st.markdown("---")
-                    st.subheader("🔑 Enter OTP")
+                    st.subheader("Enter Verification Code")
                     otp_input = st.text_input(
                         "OTP Code",
-                        placeholder="Enter 6-digit OTP",
-                        help="Enter the OTP sent to your phone"
+                        placeholder="Enter 6-digit verification code",
+                        help="Enter the verification code sent to your phone"
                     )
                     
-                    if st.button("✅ Verify OTP"):
+                    if st.button("Verify Code"):
                         if otp_input and len(otp_input) == 6 and otp_input.isdigit():
-                            with st.spinner("Verifying OTP..."):
+                            with st.spinner("Verifying code..."):
                                 verified, response = otp_service.verify_otp(st.session_state.otp_phone, otp_input)
                             
                             if verified:
                                 st.session_state.otp_verified = True
-                                st.success("✅ OTP verified successfully!")
+                                st.success("Phone number verified successfully!")
                                 
                                 # Automatically proceed to patient lookup
                                 with st.spinner("Looking up patient records..."):
@@ -446,25 +446,25 @@ if st.session_state.stage == 'welcome':
                                     st.session_state.stage = 'reconciliation'
                                     st.rerun()
                                 else:
-                                    st.error("❌ No patient record found for this phone number. Please register as a new patient.")
+                                    st.error("No patient record found for this phone number. Please register as a new patient.")
                                     st.session_state.show_registration = True
                                     st.rerun()
                             else:
-                                st.error(f"❌ {response.get('error', 'OTP verification failed')}")
+                                st.error(f"{response.get('error', 'Verification failed')}")
                         else:
-                            st.warning("⚠️ Please enter a valid 6-digit OTP")
+                            st.warning("Please enter a valid 6-digit verification code")
             
         else:
             # Other authentication methods
             if st.session_state.auth_method == 'patient_id':
-                st.subheader("🆔 Patient ID / UHID / MRN")
+                st.subheader("Patient ID / UHID / MRN")
                 identifier_input = st.text_input(
                     "Patient ID / UHID / MRN",
                     placeholder="e.g., GEN10001, REG2025010112345678, MRN20250101ABC123...",
                     help="Enter your Patient ID, UHID, or Medical Record Number"
                 )
             elif st.session_state.auth_method == 'abha':
-                st.subheader("🆔 ABHA ID")
+                st.subheader("ABHA ID")
                 identifier_input = st.text_input(
                     "ABHA ID",
                     placeholder="Enter your 14-digit ABHA ID",
@@ -474,7 +474,7 @@ if st.session_state.stage == 'welcome':
         col_btn1, col_btn2 = st.columns(2)
 
         with col_btn1:
-            if st.button("Continue ➡️"):
+            if st.button("Continue"):
                 if identifier_input:
                     # Check if patient exists
                     # For patient_id method, use auto-detection to check both Patient ID and MRN
@@ -492,26 +492,26 @@ if st.session_state.stage == 'welcome':
                         st.session_state.stage = 'reconciliation'
                         st.rerun()
                     else:
-                        st.error("❌ Patient not found. Please register as a new patient.")
+                        st.error("Patient not found. Please register as a new patient.")
                         st.session_state.show_registration = True
                         st.rerun()
                 else:
-                    st.warning("⚠️ Please enter your identifier to continue.")
+                    st.warning("Please enter your identifier to continue.")
 
         with col_btn2:
-            if st.button("🆕 New Patient Registration"):
+            if st.button("New Patient Registration"):
                 st.session_state.show_registration = True
                 st.rerun()
 
     # Show registration form if requested
     if st.session_state.show_registration:
         st.markdown("---")
-        st.subheader("🆕 New Patient Registration")
+        st.subheader("New Patient Registration")
 
         with st.form("patient_registration_form"):
             st.markdown("""
             <div class="info-box">
-            <h4>📋 Registration Information</h4>
+            <h4>Registration Information</h4>
             <p>Please fill in your details. ABHA ID is optional but recommended for KYC verification.</p>
             </div>
             """, unsafe_allow_html=True)
@@ -547,7 +547,7 @@ if st.session_state.stage == 'welcome':
 
             # ABHA ID section
             st.markdown("---")
-            st.subheader("🆔 ABHA (Ayushman Bharat Health Account) - Optional")
+            st.subheader("ABHA (Ayushman Bharat Health Account) - Optional")
             st.markdown("""
             <div class="info-box">
             <p><strong>What is ABHA?</strong> ABHA is a 14-digit unique health ID that helps you access and share your health records digitally across different healthcare providers.</p>
@@ -559,28 +559,28 @@ if st.session_state.stage == 'welcome':
                                     help="Enter your 14-digit ABHA ID for KYC verification")
 
             if abha_id and not validate_abha_id_format(abha_id):
-                st.error("❌ ABHA ID must be exactly 14 digits")
+                st.error("ABHA ID must be exactly 14 digits")
 
             # Form submission
             col_submit1, col_submit2 = st.columns(2)
 
             with col_submit1:
-                if st.form_submit_button("🔄 Cancel Registration"):
+                if st.form_submit_button("Cancel Registration"):
                     st.session_state.show_registration = False
                     st.rerun()
 
             with col_submit2:
-                if st.form_submit_button("✅ Register Patient"):
+                if st.form_submit_button("Register Patient"):
                     # Validate required fields
                     if not all([name, dob, gender, phone, email]):
                         st.error(
-                            "❌ Please fill in all required fields (marked with *)")
+                            "Please fill in all required fields (marked with *)")
                     elif not re.match(r'^\d{10}$', phone):
-                        st.error("❌ Phone number must be exactly 10 digits")
+                        st.error("Phone number must be exactly 10 digits")
                     elif not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
-                        st.error("❌ Please enter a valid email address")
+                        st.error("Please enter a valid email address")
                     elif abha_id and not validate_abha_id_format(abha_id):
-                        st.error("❌ ABHA ID must be exactly 14 digits")
+                        st.error("ABHA ID must be exactly 14 digits")
                     else:
                         # Prepare registration data
                         registration_data = {
@@ -606,10 +606,10 @@ if st.session_state.stage == 'welcome':
 
                         if success:
                             st.success(
-                                f"✅ Registration successful! Your Patient ID is: **{patient_id}**")
+                                f"Registration successful! Your Patient ID is: **{patient_id}**")
                             if response.get("abha_verified"):
                                 st.success(
-                                    "🆔 ABHA verification completed successfully!")
+                                    "ABHA verification completed successfully!")
 
                             # Set patient data and proceed
                             st.session_state.patient_id = patient_id
@@ -620,7 +620,7 @@ if st.session_state.stage == 'welcome':
                             st.rerun()
                         else:
                             st.error(
-                                f"❌ Registration failed: {response.get('error', 'Unknown error')}")
+                                f"Registration failed: {response.get('error', 'Unknown error')}")
 
 elif st.session_state.stage == 'reconciliation':
     st.title("🔄 Medical History Reconciliation")
@@ -1101,7 +1101,7 @@ elif st.session_state.stage == 'patient_info':
 
         st.markdown("---")
 
-        if st.button("Continue to Symptoms ➡️"):
+        if st.button("Continue to Symptoms"):
             st.session_state.stage = 'symptoms'
             st.rerun()
 
