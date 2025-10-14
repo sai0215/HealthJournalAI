@@ -1514,7 +1514,18 @@ elif st.session_state.stage == 'insights':
         if len(conditions_list) > 2:
             conditions_display += f' (+{len(conditions_list)-2} more)'
         
-        st.info(f"**Medical Overview**\n\n**{condition_count}** Active Conditions\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        # Enhanced Medical Overview Box with more details
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+            <div style="color: #495057;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Medical Overview</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{condition_count}</strong> Active Conditions</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{procedure_count}</strong> Past Procedures</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{family_count}</strong> Family History Items</div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 8px;">Last updated: {datetime.now().strftime('%d %b %Y')}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Medications Box
         medications_expanded = st.session_state.expanded_sections.get('medications', False)
@@ -1541,7 +1552,18 @@ elif st.session_state.stage == 'insights':
         # Calculate adherence score (simulated)
         adherence_score = min(95, max(60, 85 + (medication_count * 2)))
         
-        st.success(f"**Medications**\n\n**{medication_count}** Active Medications\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        # Enhanced Medications Box with more details
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+            <div style="color: #495057;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Medications</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{medication_count}</strong> Active Medications</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{past_medication_count}</strong> Past Medications</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{adherence_score}%</strong> Adherence Score</div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 8px;">Last updated: {datetime.now().strftime('%d %b %Y')}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Allergies & Risks Box
         allergies_expanded = st.session_state.expanded_sections.get('allergies_risks', False)
@@ -1576,7 +1598,18 @@ elif st.session_state.stage == 'insights':
         if len(allergies_list) > 2:
             allergies_display += f' (+{len(allergies_list)-2} more)'
         
-        st.error(f"**Allergies & Risks**\n\n**{allergy_count}** Documented Allergies\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        # Enhanced Allergies & Risks Box with more details
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+            <div style="color: #495057;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Allergies & Risks</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{allergy_count}</strong> Documented Allergies</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{risk_factors}</strong> Risk Factors</div>
+                <div style="font-size: 14px; margin-bottom: 4px; color: {risk_color};"><strong>{risk_level}</strong> Risk Level</div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 8px;">Last updated: {datetime.now().strftime('%d %b %Y')}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
         # Trends & Analytics Box
@@ -1592,7 +1625,18 @@ elif st.session_state.stage == 'insights':
         trend_direction = "Improving" if avg_symptoms < 3 else "Stable"
         trend_color = "#28a745" if trend_direction == "Improving" else "#ffc107"
         
-        st.info(f"**Trends & Analytics**\n\n**90** Days Tracked\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        # Enhanced Trends & Analytics Box with more details
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+            <div style="color: #495057;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Trends & Analytics</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{days_tracked}</strong> Days Tracked</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{visits_this_month}</strong> Visits This Month</div>
+                <div style="font-size: 14px; margin-bottom: 4px; color: {trend_color};"><strong>{trend_direction}</strong> Trend</div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 8px;">Last updated: {datetime.now().strftime('%d %b %Y')}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Detailed Analysis Box
         analysis_expanded = st.session_state.expanded_sections.get('detailed_analysis', False)
@@ -1617,7 +1661,18 @@ elif st.session_state.stage == 'insights':
             health_color = "#dc3545"
             health_status = "Poor"
         
-        st.success(f"**Detailed Analysis**\n\n**85** Health Score\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        # Enhanced Detailed Analysis Box with more details
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+            <div style="color: #495057;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Detailed Analysis</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{health_score}</strong> Health Score</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{symptom_severity}</strong> Symptom Severity</div>
+                <div style="font-size: 14px; margin-bottom: 4px; color: {health_color};"><strong>{health_status}</strong> Health Status</div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 8px;">Last updated: {datetime.now().strftime('%d %b %Y')}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col3:
         # Clinical Notes Box
@@ -1636,7 +1691,18 @@ elif st.session_state.stage == 'insights':
         plan_status = "On Track" if pending_tasks <= 5 else "Needs Attention"
         status_color = "#28a745" if plan_status == "On Track" else "#ffc107"
         
-        st.info(f"**Clinical Notes & Care Plan**\n\n**3** Active Plans\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        # Enhanced Clinical Notes & Care Plan Box with more details
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+            <div style="color: #495057;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Clinical Notes & Care Plan</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{active_plans}</strong> Active Plans</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{pending_tasks}</strong> Pending Tasks</div>
+                <div style="font-size: 14px; margin-bottom: 4px; color: {status_color};"><strong>{plan_status}</strong> Status</div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 8px;">Last updated: {datetime.now().strftime('%d %b %Y')}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Digital Locker Box
         locker_expanded = st.session_state.expanded_sections.get('digital_locker', False)
@@ -1662,7 +1728,18 @@ elif st.session_state.stage == 'insights':
             storage_status = "Full"
             storage_color = "#dc3545"
         
-        st.info(f"**Digital Health Locker**\n\n**12** Total Files\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        # Enhanced Digital Health Locker Box with more details
+        st.markdown(f"""
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+            <div style="color: #495057;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Digital Health Locker</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{total_files}</strong> Total Files</div>
+                <div style="font-size: 14px; margin-bottom: 4px;"><strong>{recent_uploads}</strong> Recent Uploads</div>
+                <div style="font-size: 14px; margin-bottom: 4px; color: {storage_color};"><strong>{storage_status}</strong> Storage</div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 8px;">Last updated: {datetime.now().strftime('%d %b %Y')}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Force Streamlit to detect changes
     st.markdown("---")
