@@ -200,6 +200,16 @@ def serialize_patient_info(patient_info):
         else:
             serializable_info[key] = value
 
+    # Generate MRN if not present
+    if not serializable_info.get('MRN') or serializable_info.get('MRN') == 'N/A':
+        # Generate MRN in format: MRN{YYYYMMDD}{6-char-random}
+        import random
+        import string
+        today = datetime.now()
+        date_str = today.strftime('%Y%m%d')
+        random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        serializable_info['MRN'] = f"MRN{date_str}{random_str}"
+
     # Calculate age from DOB if available
     dob = patient_info.get('DOB')
     if pd.notna(dob) and dob:
@@ -683,8 +693,8 @@ elif st.session_state.stage == 'reconciliation':
     
     with col1:
         st.markdown(f"""
-        <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-            <h4 style="margin: 0; color: #1976d2; font-size: 16px;">Patient ID: {st.session_state.patient_id}</h4>
+        <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
+            <h4 style="margin: 0; color: #2c3e50; font-size: 16px;">Patient ID: {st.session_state.patient_id}</h4>
         </div>
         """, unsafe_allow_html=True)
         
@@ -924,14 +934,26 @@ elif st.session_state.stage == 'patient_info':
         patient_records = st.session_state.patient_records
         mrn = patient_records.get('MRN', 'N/A')
         
+        # Generate MRN if not present
+        if mrn == 'N/A' or not mrn:
+            import random
+            import string
+            today = datetime.now()
+            date_str = today.strftime('%Y%m%d')
+            random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            mrn = f"MRN{date_str}{random_str}"
+            # Update the patient records with the generated MRN
+            patient_records['MRN'] = mrn
+            st.session_state.patient_records = patient_records
+        
         st.markdown(f"""
-        <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                 <div>
-            <h4 style="margin: 0; color: #1976d2; font-size: 16px;">🆔 Patient ID: {st.session_state.patient_id}</h4>
+            <h4 style="margin: 0; color: #2c3e50; font-size: 16px;">Patient ID: {st.session_state.patient_id}</h4>
                 </div>
                 <div>
-                    <h4 style="margin: 0; color: #1976d2; font-size: 16px;">📋 MRN: {mrn}</h4>
+                    <h4 style="margin: 0; color: #2c3e50; font-size: 16px;">MRN: {mrn}</h4>
                 </div>
             </div>
         </div>
@@ -2163,9 +2185,9 @@ elif st.session_state.stage == 'insights':
                 # File preview
                 file_size_kb = len(uploaded_file.getvalue()) / 1024
                 st.markdown(f"""
-                <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #2196f3;">
-                    <h5 style="margin: 0 0 4px 0; color: #0d47a1; font-size: 14px;">📄 File Selected</h5>
-                    <p style="margin: 0; color: #0d47a1; font-size: 12px;"><strong>{uploaded_file.name}</strong> | Size: {file_size_kb:.1f} KB | Type: {document_type}</p>
+                <div style="background: #ffffff; padding: 12px; border-radius: 6px; margin: 8px 0; border: 1px solid #e0e0e0;">
+                    <h5 style="margin: 0 0 4px 0; color: #2c3e50; font-size: 14px;">File Selected</h5>
+                    <p style="margin: 0; color: #2c3e50; font-size: 12px;"><strong>{uploaded_file.name}</strong> | Size: {file_size_kb:.1f} KB | Type: {document_type}</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -2743,16 +2765,20 @@ Health Journal System
             """, unsafe_allow_html=True)
 
 elif st.session_state.stage == 'summary':
-    st.title("📊 Health Assessment Summary")
+    st.markdown("""
+    <h1 style="font-size: 28px; color: #2c3e50; margin-bottom: 10px; font-weight: 600; text-align: left;">
+        Health Assessment Summary
+    </h1>
+    """, unsafe_allow_html=True)
 
     summary = st.session_state.final_summary
     patient_info = summary['structured_data']['patient_info']
 
     # Success message
     st.markdown("""
-    <div class="success-box">
-    <h3>✅ Assessment Complete!</h3>
-    <p>Your health information has been successfully processed and logged in our system.</p>
+    <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); padding: 20px; border-radius: 10px; border-left: 4px solid #28a745; margin: 10px 0 20px 0;">
+        <h3 style="color: #155724; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">Assessment Complete!</h3>
+        <p style="color: #155724; margin: 0; font-size: 14px;">Your health information has been successfully processed and logged in our system.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2760,25 +2786,100 @@ elif st.session_state.stage == 'summary':
     col1, col2 = st.columns([3, 2])
 
     with col1:
-        st.subheader("👤 Patient Information")
+        st.markdown("""
+        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
+            Patient Information
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown(f"**Patient ID:** {st.session_state.patient_id}")
-        st.markdown(f"**MRN:** {patient_info.get('MRN', 'N/A')}")
+        # Ensure MRN is properly set
+        mrn_value = patient_info.get('MRN', 'N/A')
+        if mrn_value == 'N/A' or not mrn_value:
+            import random
+            import string
+            today = datetime.now()
+            date_str = today.strftime('%Y%m%d')
+            random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            mrn_value = f"MRN{date_str}{random_str}"
+        
+        st.markdown(f"**MRN:** {mrn_value}")
         st.markdown(f"**Name:** {patient_info.get('Name', 'N/A')}")
         st.markdown(
             f"**Age:** {patient_info.get('Age', 'N/A')} | **Gender:** {patient_info.get('Gender', 'N/A')}")
 
         st.markdown("---")
 
-        # Symptoms
-        st.subheader("🩺 Reported Symptoms")
-        st.info(summary['structured_data']['symptom_changes'])
+        # Clinical Summary
+        st.markdown("""
+        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 8px; font-weight: 600;">
+            Clinical Summary
+        </div>
+        """, unsafe_allow_html=True)
+        # Clinical Summary content with proper summary
+        st.markdown(f"""
+        <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p style="margin: 0; color: #2c3e50; font-size: 16px; line-height: 1.5;">
+                <strong>Summary:</strong> Based on the patient's reported symptoms and medical history, this assessment provides a comprehensive overview of their current health status and recommended care pathway. The patient has reported: {summary['structured_data']['symptom_changes']}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Treatment Provided
+        st.markdown("""
+        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 8px; font-weight: 600;">
+            Treatment Provided
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p style="margin: 0; color: #2c3e50; font-size: 16px; line-height: 1.5;">
+                Treatment recommendations will be discussed with the healthcare provider based on diagnostic test results and clinical evaluation.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Current Condition
+        st.markdown("""
+        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 8px; font-weight: 600;">
+            Current Condition
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p style="margin: 0; color: #2c3e50; font-size: 16px; line-height: 1.5;">
+                Condition assessment is ongoing. Regular monitoring and follow-up appointments are recommended.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Current and Past Medications
+        st.markdown("""
+        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 8px; font-weight: 600;">
+            Current and Past Medications
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p style="margin: 0; color: #2c3e50; font-size: 16px; line-height: 1.5;">
+                Please review current and past medications with your healthcare provider to ensure optimal treatment outcomes and understand treatment patterns.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
         if summary['structured_data']['additional_info']:
-            st.subheader("ℹ️ Additional Information")
+            st.markdown("""
+            <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
+                Additional Information
+            </div>
+            """, unsafe_allow_html=True)
             st.text(summary['structured_data']['additional_info'])
 
     with col2:
-        st.subheader("⏰ Assessment Details")
+        st.markdown("""
+        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
+            Assessment Details
+        </div>
+        """, unsafe_allow_html=True)
         timestamp = datetime.fromisoformat(summary['timestamp'])
 
         # Create a more compact and elegant timestamp display
@@ -2792,7 +2893,11 @@ elif st.session_state.stage == 'summary':
     st.markdown("---")
 
     # Diagnostic Tests
-    st.subheader("🔬 Recommended Diagnostic Tests")
+    st.markdown("""
+    <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
+        Recommended Diagnostic Tests
+    </div>
+    """, unsafe_allow_html=True)
 
     tests = summary['diagnostic_tests']
 
@@ -2804,50 +2909,46 @@ elif st.session_state.stage == 'summary':
 
     st.markdown("---")
 
-    # Action items
-    st.subheader("📋 Next Steps")
+    # Healthcare Action Plan
+    st.markdown("""
+    <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
+        Healthcare Action Plan
+    </div>
+    """, unsafe_allow_html=True)
 
     col_a, col_b = st.columns(2)
 
     with col_a:
         st.markdown("""
-        **Immediate Actions:**
-        - Review the recommended tests with your healthcare provider
-        - Schedule appointments as needed
-        - Monitor your symptoms and note any changes
+        **Healthcare Provider Consultation:**
+        - Share this assessment with your primary care physician
+        - Discuss the recommended diagnostic tests
+        - Review your current medication regimen
+        - Address any concerns or questions you may have
         """)
 
     with col_b:
         st.markdown("""
-        **Follow-up:**
-        - Keep track of symptom progression
-        - Report any severe or worsening symptoms immediately
-        - Maintain regular communication with your healthcare team
+        **Self-Care & Monitoring:**
+        - Maintain a symptom diary for tracking changes
+        - Follow prescribed treatment plans consistently
+        - Practice healthy lifestyle habits
+        - Seek immediate medical attention for severe symptoms
         """)
 
     st.markdown("---")
 
     # Download options
-    col_d1, col_d2, col_d3 = st.columns(3)
+    col_d1, col_d2 = st.columns(2)
 
     with col_d1:
-        # Export as JSON
-        json_data = json.dumps(summary, indent=2)
-        st.download_button(
-            label="📥 Download JSON Report",
-            data=json_data,
-            file_name=f"health_report_{st.session_state.patient_id}_{datetime.now().strftime('%Y%m%d')}.json",
-            mime="application/json"
-        )
-
-    with col_d2:
         # Export as text
         text_report = f"""
 HEALTH ASSESSMENT REPORT
 ========================
 
 Patient ID: {st.session_state.patient_id}
-MRN: {patient_info.get('MRN', 'N/A')}
+MRN: {mrn_value}
 Date: {timestamp.strftime("%Y-%m-%d %H:%M:%S")}
 
 PATIENT INFORMATION:
@@ -2855,8 +2956,19 @@ Name: {patient_info.get('Name', 'N/A')}
 Age: {patient_info.get('Age', 'N/A')}
 Gender: {patient_info.get('Gender', 'N/A')}
 
-REPORTED SYMPTOMS:
-{summary['structured_data']['symptom_changes']}
+CLINICAL SUMMARY:
+Summary: Based on the patient's reported symptoms and medical history, this assessment provides a comprehensive overview of their current health status and recommended care pathway. The patient has reported: {summary['structured_data']['symptom_changes']}
+
+TREATMENT PROVIDED:
+Current Treatment: Based on the assessment, the following treatment recommendations have been provided to address the patient's symptoms and underlying conditions.
+Treatment recommendations will be discussed with the healthcare provider based on diagnostic test results and clinical evaluation.
+
+CURRENT CONDITION:
+Condition Status: The patient's current health condition is being monitored and evaluated based on reported symptoms and medical history.
+Condition assessment is ongoing. Regular monitoring and follow-up appointments are recommended.
+
+CURRENT AND PAST MEDICATIONS:
+Please review current and past medications with your healthcare provider to ensure optimal treatment outcomes and understand treatment patterns.
 
 ADDITIONAL INFORMATION:
 {summary['structured_data']['additional_info'] or 'None'}
@@ -2868,14 +2980,14 @@ RECOMMENDED DIAGNOSTIC TESTS:
 Generated by Health Assistant
         """
         st.download_button(
-            label="📄 Download Text Report",
+            label="Download Text Report",
             data=text_report,
             file_name=f"health_report_{st.session_state.patient_id}_{datetime.now().strftime('%Y%m%d')}.txt",
             mime="text/plain"
         )
 
-    with col_d3:
-        if st.button("🔄 New Assessment"):
+    with col_d2:
+        if st.button("New Assessment"):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             # Reinitialize default session state
@@ -2889,12 +3001,16 @@ Generated by Health Assistant
             st.session_state.duplicate_confirmations = []
             st.rerun()
 
-    # Footer
+    # NABH Disclaimer
     st.markdown("---")
     st.markdown("""
-    <div class="info-box">
-    <p><strong>⚠️ Important Notice:</strong> This assessment is for informational purposes only and does not replace professional medical advice. 
-    Please consult with qualified healthcare professionals for diagnosis and treatment.</p>
+    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 25px; border-radius: 12px; border-left: 5px solid #007bff; margin: 25px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <h4 style="color: #2c3e50; margin: 0 0 18px 0; font-size: 18px; font-weight: 700; text-align: center;">Disclaimer</h4>
+        <p style="color: #495057; margin: 0; font-size: 14px; line-height: 1.6; text-align: justify;">
+            The contents are sample references to aid understanding of the Standards and are not prescribed by NABH as 
+            mandatory practices. Healthcare organizations are encouraged to modify them as per their scope and practices. NABH is 
+            not liable for misinterpretation, erroneous use, or non-conformities during assessment due to unmodified use of these contents.
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
