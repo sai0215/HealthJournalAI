@@ -1083,7 +1083,7 @@ elif st.session_state.stage == 'patient_info':
                     <h4 style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 600;">Drug Allergies</h4>
                 </div>
                 <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6; min-height: 60px;">{allergies}</p>
-            </div>
+                </div>
             """, unsafe_allow_html=True)
             
             # Add allergies form
@@ -1125,9 +1125,9 @@ elif st.session_state.stage == 'patient_info':
                     <h4 style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 600;">Past Medical History</h4>
                 </div>
                 <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6; min-height: 60px;">{history}</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
+        </div>
+        """, unsafe_allow_html=True)
+
             # Add conditions form
             if st.button("➕ Add Conditions", key="add_conditions_btn", help="Add new medical conditions"):
                 st.session_state.show_add_conditions = not st.session_state.show_add_conditions
@@ -1135,31 +1135,31 @@ elif st.session_state.stage == 'patient_info':
             if st.session_state.get('show_add_conditions', False):
                 with st.form("add_conditions_form"):
                     st.markdown("**Add New Medical Conditions**")
-                    new_conditions = st.text_area(
-                        "Enter new medical conditions (one per line or separated by commas):",
-                        placeholder="e.g., High blood pressure\nDiabetes\nAsthma",
-                        height=80,
-                        label_visibility="collapsed"
-                    )
-                    if st.form_submit_button("Add Conditions", type="primary"):
-                        if new_conditions.strip():
-                            conditions_list = [cond.strip() for cond in new_conditions.replace('\n', ',').split(',') if cond.strip()]
-                            if conditions_list:
-                                current_conditions = patient_records.get('Past Medical History', '')
-                                if current_conditions and current_conditions != 'No significant medical history':
-                                    new_conditions_str = ', '.join(conditions_list)
-                                    patient_records['Past Medical History'] = f"{current_conditions}; {new_conditions_str}"
-                                else:
-                                    patient_records['Past Medical History'] = ', '.join(conditions_list)
-                                
-                                st.session_state.patient_records = patient_records
-                                st.session_state.show_add_conditions = False
-                                st.success(f"Added {len(conditions_list)} new condition(s)!")
-                                st.rerun()
-                    if st.form_submit_button("Cancel"):
-                        st.session_state.show_add_conditions = False
-                        st.rerun()
-        
+                new_conditions = st.text_area(
+                    "Enter new medical conditions (one per line or separated by commas):",
+                    placeholder="e.g., High blood pressure\nDiabetes\nAsthma",
+                    height=80,
+                    label_visibility="collapsed"
+                )
+                if st.form_submit_button("Add Conditions", type="primary"):
+                    if new_conditions.strip():
+                        conditions_list = [cond.strip() for cond in new_conditions.replace('\n', ',').split(',') if cond.strip()]
+                        if conditions_list:
+                            current_conditions = patient_records.get('Past Medical History', '')
+                            if current_conditions and current_conditions != 'No significant medical history':
+                                new_conditions_str = ', '.join(conditions_list)
+                                patient_records['Past Medical History'] = f"{current_conditions}; {new_conditions_str}"
+                            else:
+                                patient_records['Past Medical History'] = ', '.join(conditions_list)
+                            
+                            st.session_state.patient_records = patient_records
+                            st.session_state.show_add_conditions = False
+                            st.success(f"Added {len(conditions_list)} new condition(s)!")
+                            st.rerun()
+                if st.form_submit_button("Cancel"):
+                    st.session_state.show_add_conditions = False
+                    st.rerun()
+
         with col2:
             # Current Medications Card
             st.markdown(f"""
@@ -1202,7 +1202,7 @@ elif st.session_state.stage == 'patient_info':
                     if st.form_submit_button("Cancel"):
                         st.session_state.show_add_medications = False
                         st.rerun()
-            
+
             # Recent Procedures Card
             st.markdown(f"""
             <div style="background-color: rgba(255,255,255,0.9); padding: 20px; border-radius: 12px; border-left: 5px solid #fd7e14; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
@@ -1253,20 +1253,20 @@ elif st.session_state.stage == 'patient_info':
 
 
 elif st.session_state.stage == 'symptoms':
-    st.markdown("""
+        st.markdown("""
     <h1 style="font-size: 28px; color: #2c3e50; margin-bottom: 25px; font-weight: 600; text-align: left;">
         Symptom Assessment
     </h1>
-    """, unsafe_allow_html=True)
-
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-        st.markdown(f"""
-        <div style="font-size: 16px; color: #495057; margin-bottom: 15px; font-weight: 500;">
-            Patient ID: {st.session_state.patient_id}
-        </div>
         """, unsafe_allow_html=True)
+
+        col1, col2 = st.columns([2, 1])
+
+        with col1:
+            st.markdown(f"""
+            <div style="font-size: 16px; color: #495057; margin-bottom: 15px; font-weight: 500;">
+                Patient ID: {st.session_state.patient_id}
+            </div>
+            """, unsafe_allow_html=True)
 
         st.markdown("""
         <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
@@ -1403,18 +1403,18 @@ elif st.session_state.stage == 'symptoms':
                     st.warning(
                         "⚠️ Please describe your symptoms before continuing.")
 
-    with col2:
-        st.markdown("""
-        <div class="info-box">
-        <h4>💡 Tips for Describing Symptoms</h4>
-        <ul>
-            <li><strong>Be specific:</strong> "Sharp pain in lower back" is better than "back pain"</li>
-            <li><strong>Include duration:</strong> "For 3 days" or "Started this morning"</li>
-            <li><strong>Note severity:</strong> Mild, moderate, or severe</li>
-            <li><strong>Mention patterns:</strong> "Worse in the morning" or "After eating"</li>
-        </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        with col2:
+            st.markdown("""
+            <div class="info-box">
+            <h4>💡 Tips for Describing Symptoms</h4>
+            <ul>
+                <li><strong>Be specific:</strong> "Sharp pain in lower back" is better than "back pain"</li>
+                <li><strong>Include duration:</strong> "For 3 days" or "Started this morning"</li>
+                <li><strong>Note severity:</strong> Mild, moderate, or severe</li>
+                <li><strong>Mention patterns:</strong> "Worse in the morning" or "After eating"</li>
+            </ul>
+            </div>
+            """, unsafe_allow_html=True)
 
 elif st.session_state.stage == 'insights':
     # Helper function to safely parse semicolon-separated fields
@@ -1473,10 +1473,202 @@ elif st.session_state.stage == 'insights':
         </div>
         """, unsafe_allow_html=True)
     
-    # Dashboard tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["🏥 Medical Overview", "💊 Medications", "⚠️ Allergies & Risks", "📈 Trends & Analytics", "🔍 Detailed Analysis", "📋 Clinical Notes & Care Plan", "📁 Digital Health Locker"])
+    # Initialize session state for expanded sections
+    if 'expanded_sections' not in st.session_state:
+        st.session_state.expanded_sections = {}
     
-    with tab1:
+    # Dashboard grid layout with expandable boxes
+    st.markdown("""
+    <div style="margin: 20px 0;">
+        <h3 style="color: #2c3e50; font-size: 18px; font-weight: 600; margin-bottom: 15px;">Dashboard Sections</h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Create grid of expandable sections
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        # Medical Overview Box
+        medical_expanded = st.session_state.expanded_sections.get('medical_overview', False)
+        if st.button("Medical Overview", use_container_width=True, key="medical_overview"):
+            st.session_state.expanded_sections['medical_overview'] = not medical_expanded
+            st.rerun()
+        
+        # Show detailed info for Medical Overview
+        conditions = st.session_state.patient_records.get('Past Medical History', '')
+        conditions_list = safe_parse_field(conditions)
+        condition_count = len(conditions_list) if conditions_list and conditions != 'No significant medical history' else 0
+        
+        # Get additional medical data
+        procedures = st.session_state.patient_records.get('Past Surgical History', '')
+        procedures_list = safe_parse_field(procedures)
+        procedure_count = len(procedures_list) if procedures_list and procedures != 'No surgical history' else 0
+        
+        family_history = st.session_state.patient_records.get('Family History', '')
+        family_list = safe_parse_field(family_history)
+        family_count = len(family_list) if family_list and family_history != 'No significant family history' else 0
+        
+        # Get recent conditions (first 2)
+        recent_conditions = conditions_list[:2] if conditions_list and conditions != 'No significant medical history' else []
+        conditions_display = ', '.join(recent_conditions) if recent_conditions else 'No conditions'
+        if len(conditions_list) > 2:
+            conditions_display += f' (+{len(conditions_list)-2} more)'
+        
+        st.info(f"**Medical Overview**\n\n**{condition_count}** Active Conditions\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        
+        # Medications Box
+        medications_expanded = st.session_state.expanded_sections.get('medications', False)
+        if st.button("Medications", use_container_width=True, key="medications"):
+            st.session_state.expanded_sections['medications'] = not medications_expanded
+            st.rerun()
+        
+        # Show detailed info for Medications
+        medications = st.session_state.patient_records.get('Current Medications', '')
+        medications_list = safe_parse_field(medications)
+        medication_count = len(medications_list) if medications_list and medications != 'No current medications' else 0
+        
+        # Get past medications
+        past_medications = st.session_state.patient_records.get('Past Medications', '')
+        past_medications_list = safe_parse_field(past_medications)
+        past_medication_count = len(past_medications_list) if past_medications_list and past_medications != 'No past medications' else 0
+        
+        # Get recent medications (first 2)
+        recent_medications = medications_list[:2] if medications_list and medications != 'No current medications' else []
+        medications_display = ', '.join(recent_medications) if recent_medications else 'No medications'
+        if len(medications_list) > 2:
+            medications_display += f' (+{len(medications_list)-2} more)'
+        
+        # Calculate adherence score (simulated)
+        adherence_score = min(95, max(60, 85 + (medication_count * 2)))
+        
+        st.success(f"**Medications**\n\n**{medication_count}** Active Medications\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        
+        # Allergies & Risks Box
+        allergies_expanded = st.session_state.expanded_sections.get('allergies_risks', False)
+        if st.button("Allergies & Risks", use_container_width=True, key="allergies_risks"):
+            st.session_state.expanded_sections['allergies_risks'] = not allergies_expanded
+            st.rerun()
+        
+        # Show detailed info for Allergies & Risks
+        allergies = st.session_state.patient_records.get('Drug Allergies', '')
+        allergies_list = safe_parse_field(allergies)
+        allergy_count = len(allergies_list) if allergies_list and allergies != 'No known drug allergies' else 0
+        
+        # Get additional risk factors
+        smoking = st.session_state.patient_records.get('Smoking Status', '')
+        alcohol = st.session_state.patient_records.get('Alcohol Consumption', '')
+        
+        # Calculate risk score (simulated)
+        risk_factors = 0
+        if allergy_count > 0:
+            risk_factors += 1
+        if 'smoking' in smoking.lower() or 'current' in smoking.lower():
+            risk_factors += 1
+        if 'heavy' in alcohol.lower() or 'excessive' in alcohol.lower():
+            risk_factors += 1
+        
+        risk_level = "Low" if risk_factors == 0 else "Moderate" if risk_factors <= 2 else "High"
+        risk_color = "#28a745" if risk_level == "Low" else "#ffc107" if risk_level == "Moderate" else "#dc3545"
+        
+        # Get recent allergies (first 2)
+        recent_allergies = allergies_list[:2] if allergies_list and allergies != 'No known drug allergies' else []
+        allergies_display = ', '.join(recent_allergies) if recent_allergies else 'No allergies'
+        if len(allergies_list) > 2:
+            allergies_display += f' (+{len(allergies_list)-2} more)'
+        
+        st.error(f"**Allergies & Risks**\n\n**{allergy_count}** Documented Allergies\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+    
+    with col2:
+        # Trends & Analytics Box
+        trends_expanded = st.session_state.expanded_sections.get('trends_analytics', False)
+        if st.button("Trends & Analytics", use_container_width=True, key="trends_analytics"):
+            st.session_state.expanded_sections['trends_analytics'] = not trends_expanded
+            st.rerun()
+        
+        # Calculate trend metrics (simulated)
+        days_tracked = 90
+        visits_this_month = 3
+        avg_symptoms = 2.5
+        trend_direction = "Improving" if avg_symptoms < 3 else "Stable"
+        trend_color = "#28a745" if trend_direction == "Improving" else "#ffc107"
+        
+        st.info(f"**Trends & Analytics**\n\n**90** Days Tracked\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        
+        # Detailed Analysis Box
+        analysis_expanded = st.session_state.expanded_sections.get('detailed_analysis', False)
+        if st.button("Detailed Analysis", use_container_width=True, key="detailed_analysis"):
+            st.session_state.expanded_sections['detailed_analysis'] = not analysis_expanded
+            st.rerun()
+        
+        # Calculate analysis metrics (simulated)
+        health_score = 85
+        symptom_severity = "Moderate"
+        risk_assessment = "Low-Medium"
+        analysis_completeness = 92
+        
+        # Determine health status color
+        if health_score >= 80:
+            health_color = "#28a745"
+            health_status = "Good"
+        elif health_score >= 60:
+            health_color = "#ffc107"
+            health_status = "Fair"
+        else:
+            health_color = "#dc3545"
+            health_status = "Poor"
+        
+        st.success(f"**Detailed Analysis**\n\n**85** Health Score\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+    
+    with col3:
+        # Clinical Notes Box
+        clinical_expanded = st.session_state.expanded_sections.get('clinical_notes', False)
+        if st.button("Clinical Notes & Care Plan", use_container_width=True, key="clinical_notes"):
+            st.session_state.expanded_sections['clinical_notes'] = not clinical_expanded
+            st.rerun()
+        
+        # Calculate clinical metrics (simulated)
+        active_plans = 3
+        pending_tasks = 5
+        notes_count = 12
+        last_visit = "3 days ago"
+        
+        # Get care plan status
+        plan_status = "On Track" if pending_tasks <= 5 else "Needs Attention"
+        status_color = "#28a745" if plan_status == "On Track" else "#ffc107"
+        
+        st.info(f"**Clinical Notes & Care Plan**\n\n**3** Active Plans\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+        
+        # Digital Locker Box
+        locker_expanded = st.session_state.expanded_sections.get('digital_locker', False)
+        if st.button("Digital Health Locker", use_container_width=True, key="digital_locker"):
+            st.session_state.expanded_sections['digital_locker'] = not locker_expanded
+            st.rerun()
+        
+        # Calculate digital locker metrics (simulated)
+        total_files = 12
+        recent_uploads = 3
+        storage_used = "2.4 GB"
+        last_upload = "1 day ago"
+        
+        # Calculate storage status
+        storage_percentage = 24  # 2.4GB out of 10GB
+        if storage_percentage < 50:
+            storage_status = "Good"
+            storage_color = "#28a745"
+        elif storage_percentage < 80:
+            storage_status = "Moderate"
+            storage_color = "#ffc107"
+        else:
+            storage_status = "Full"
+            storage_color = "#dc3545"
+        
+        st.info(f"**Digital Health Locker**\n\n**12** Total Files\n\n*Last updated: {datetime.now().strftime('%d %b %Y')}*")
+    
+    # Force Streamlit to detect changes
+    st.markdown("---")
+    
+    # Display expanded section content
+    if st.session_state.expanded_sections.get('medical_overview', False):
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
             <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">🏥 Medical Overview</h3>
@@ -1561,7 +1753,7 @@ elif st.session_state.stage == 'insights':
             else:
                 st.info("No recent procedures recorded")
     
-    with tab2:
+    if st.session_state.expanded_sections.get('medications', False):
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
             <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">💊 Medication Management</h3>
@@ -1717,7 +1909,7 @@ elif st.session_state.stage == 'insights':
                 fig_heatmap.update_layout(title_font_size=14, font_size=12)
                 st.plotly_chart(fig_heatmap, use_container_width=True)
     
-    with tab3:
+    if st.session_state.expanded_sections.get('allergies_risks', False):
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc3545;">
             <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">⚠️ Allergies & Risk Assessment</h3>
@@ -1865,7 +2057,7 @@ elif st.session_state.stage == 'insights':
             else:
                 st.success("✅ All risk factors are within acceptable ranges")
     
-    with tab4:
+    if st.session_state.expanded_sections.get('trends_analytics', False):
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #17a2b8;">
             <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">📈 Trends & Analytics</h3>
@@ -1961,7 +2153,7 @@ elif st.session_state.stage == 'insights':
             fig_symptoms.update_layout(title_font_size=14, font_size=12)
             st.plotly_chart(fig_symptoms, use_container_width=True)
     
-    with tab5:
+    if st.session_state.expanded_sections.get('detailed_analysis', False):
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #6f42c1;">
             <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">🔍 Detailed Analysis</h3>
@@ -2062,7 +2254,7 @@ elif st.session_state.stage == 'insights':
             </div>
             """, unsafe_allow_html=True)
     
-    with tab6:
+    if st.session_state.expanded_sections.get('clinical_notes', False):
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
             <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">📋 Clinical Notes & Care Plan</h3>
@@ -2149,7 +2341,7 @@ elif st.session_state.stage == 'insights':
                     display_name = specialist if specialist.startswith('Dr.') else f"Dr. {specialist}"
                     st.info(f"**{display_name}**")
     
-    with tab7:
+    if st.session_state.expanded_sections.get('digital_locker', False):
         st.markdown("""
         <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #17a2b8;">
             <h3 style="margin: 0; color: #495057; font-size: 18px; font-weight: 600;">📁 Digital Health Locker</h3>
@@ -2761,6 +2953,15 @@ Health Journal System
             <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #6c757d;">
                 <h4 style="margin: 0 0 8px 0; color: #495057; font-size: 16px; font-weight: 600;">💡 Additional Sharing Options</h4>
                 <p style="margin: 0; color: #6c757d; font-size: 13px;">You can also copy the message content and share it through other platforms like Teams, Slack, or any other communication tool.</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Show message when no sections are expanded
+    if not any(st.session_state.expanded_sections.values()):
+        st.markdown("""
+        <div style="text-align: center; padding: 40px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; margin: 20px 0;">
+            <h3 style="color: #495057; font-size: 20px; margin-bottom: 10px;">Welcome to Patient 360 Insights Dashboard</h3>
+            <p style="color: #6c757d; font-size: 16px; margin: 0;">Click on any section above to view detailed insights and analytics</p>
             </div>
             """, unsafe_allow_html=True)
 
