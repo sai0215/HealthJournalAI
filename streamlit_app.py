@@ -1516,7 +1516,7 @@ elif st.session_state.stage == 'insights':
         
         # Enhanced Medical Overview Box with more details
         st.markdown(f"""
-        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 2px 0;">
             <div style="color: #495057;">
                 <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Medical Overview</div>
                 <div style="font-size: 14px; margin-bottom: 4px;"><strong>{condition_count}</strong> Active Conditions</div>
@@ -1526,6 +1526,9 @@ elif st.session_state.stage == 'insights':
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Add spacing between rows
+        st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
         
         # Medications Box
         medications_expanded = st.session_state.expanded_sections.get('medications', False)
@@ -1554,7 +1557,7 @@ elif st.session_state.stage == 'insights':
         
         # Enhanced Medications Box with more details
         st.markdown(f"""
-        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 2px 0;">
             <div style="color: #495057;">
                 <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Medications</div>
                 <div style="font-size: 14px; margin-bottom: 4px;"><strong>{medication_count}</strong> Active Medications</div>
@@ -1564,6 +1567,9 @@ elif st.session_state.stage == 'insights':
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Add spacing between rows
+        st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
         
         # Allergies & Risks Box
         allergies_expanded = st.session_state.expanded_sections.get('allergies_risks', False)
@@ -1600,7 +1606,7 @@ elif st.session_state.stage == 'insights':
         
         # Enhanced Allergies & Risks Box with more details
         st.markdown(f"""
-        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 2px 0;">
             <div style="color: #495057;">
                 <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Allergies & Risks</div>
                 <div style="font-size: 14px; margin-bottom: 4px;"><strong>{allergy_count}</strong> Documented Allergies</div>
@@ -1627,7 +1633,7 @@ elif st.session_state.stage == 'insights':
         
         # Enhanced Trends & Analytics Box with more details
         st.markdown(f"""
-        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 2px 0;">
             <div style="color: #495057;">
                 <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Trends & Analytics</div>
                 <div style="font-size: 14px; margin-bottom: 4px;"><strong>{days_tracked}</strong> Days Tracked</div>
@@ -1637,6 +1643,9 @@ elif st.session_state.stage == 'insights':
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Add spacing between rows
+        st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
         
         # Detailed Analysis Box
         analysis_expanded = st.session_state.expanded_sections.get('detailed_analysis', False)
@@ -1663,7 +1672,7 @@ elif st.session_state.stage == 'insights':
         
         # Enhanced Detailed Analysis Box with more details
         st.markdown(f"""
-        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 2px 0;">
             <div style="color: #495057;">
                 <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Detailed Analysis</div>
                 <div style="font-size: 14px; margin-bottom: 4px;"><strong>{health_score}</strong> Health Score</div>
@@ -1693,7 +1702,7 @@ elif st.session_state.stage == 'insights':
         
         # Enhanced Clinical Notes & Care Plan Box with more details
         st.markdown(f"""
-        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 2px 0;">
             <div style="color: #495057;">
                 <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Clinical Notes & Care Plan</div>
                 <div style="font-size: 14px; margin-bottom: 4px;"><strong>{active_plans}</strong> Active Plans</div>
@@ -1703,6 +1712,9 @@ elif st.session_state.stage == 'insights':
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Add spacing between rows
+        st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
         
         # Digital Locker Box
         locker_expanded = st.session_state.expanded_sections.get('digital_locker', False)
@@ -1730,7 +1742,7 @@ elif st.session_state.stage == 'insights':
         
         # Enhanced Digital Health Locker Box with more details
         st.markdown(f"""
-        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 8px 0;">
+        <div style="background-color: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 2px 0;">
             <div style="color: #495057;">
                 <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Digital Health Locker</div>
                 <div style="font-size: 14px; margin-bottom: 4px;"><strong>{total_files}</strong> Total Files</div>
