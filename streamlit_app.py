@@ -1268,91 +1268,91 @@ elif st.session_state.stage == 'symptoms':
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown("""
-        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
-            Current Symptoms
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # 1. Describe your symptoms (first)
-        symptom_description = st.text_area(
-            "Describe your symptoms:",
-            placeholder="e.g., headache, fatigue, nausea, body aches...",
-            height=120,
-            help="Describe the symptoms you're experiencing"
-        )
-        
-        # 2. How long you had the symptom
-        symptom_duration = st.text_input(
-            "How long have you had the symptoms?",
-            placeholder="e.g., 3 days, 1 week, since this morning...",
-            help="Describe how long you've been experiencing these symptoms"
-        )
-        
-        # 3. Temperature input
-        col_temp1, col_temp2 = st.columns([1.2, 0.8])
-        with col_temp1:
-            temperature = st.number_input(
-                "Temperature (°F):",
-                min_value=95.0,
-                max_value=110.0,
-                value=98.6,
-                step=0.1,
-                help="Enter your current body temperature"
-            )
-        
-        with col_temp2:
-            # Determine fever severity based on temperature
-            if temperature < 100.4:
-                fever_status = "No Fever"
-                fever_range = "Normal: <100.4°F"
-                severity_level = "None"
-            elif temperature < 102.2:
-                fever_status = "Mild Fever"
-                fever_range = "Range: 100.4-102.1°F"
-                severity_level = "Mild"
-            elif temperature < 104.0:
-                fever_status = "Moderate Fever"
-                fever_range = "Range: 100.6-102.2°F"
-                severity_level = "Moderate"
-            else:
-                fever_status = "High Fever"
-                fever_range = "Range: >104.0°F"
-                severity_level = "Severe"
+            st.markdown("""
+            <div style="font-size: 18px; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">
+                Current Symptoms
+            </div>
+            """, unsafe_allow_html=True)
             
-            # Display fever status box (aligned with temperature input)
-            if temperature >= 100.4:
-                st.markdown(f"""
-                <div style="background-color: #fff3cd; border-left: 3px solid #ffc107; padding: 8px 12px; border-radius: 6px; margin-top: 25px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <span style="color: #856404; font-size: 14px; font-weight: bold;">{fever_status}</span>
-                            <span style="color: #6c757d; font-size: 12px; margin-left: 8px;">{fever_range}</span>
+            # 1. Describe your symptoms (first)
+            symptom_description = st.text_area(
+                "Describe your symptoms:",
+                placeholder="e.g., headache, fatigue, nausea, body aches...",
+                height=120,
+                help="Describe the symptoms you're experiencing"
+            )
+            
+            # 2. How long you had the symptom
+            symptom_duration = st.text_input(
+                "How long have you had the symptoms?",
+                placeholder="e.g., 3 days, 1 week, since this morning...",
+                help="Describe how long you've been experiencing these symptoms"
+            )
+            
+            # 3. Temperature input
+            col_temp1, col_temp2 = st.columns([1.2, 0.8])
+            with col_temp1:
+                temperature = st.number_input(
+                    "Temperature (°F):",
+                    min_value=95.0,
+                    max_value=110.0,
+                    value=98.6,
+                    step=0.1,
+                    help="Enter your current body temperature"
+                )
+            
+            with col_temp2:
+                # Determine fever severity based on temperature
+                if temperature < 100.4:
+                    fever_status = "No Fever"
+                    fever_range = "Normal: <100.4°F"
+                    severity_level = "None"
+                elif temperature < 102.2:
+                    fever_status = "Mild Fever"
+                    fever_range = "Range: 100.4-102.1°F"
+                    severity_level = "Mild"
+                elif temperature < 104.0:
+                    fever_status = "Moderate Fever"
+                    fever_range = "Range: 100.6-102.2°F"
+                    severity_level = "Moderate"
+                else:
+                    fever_status = "High Fever"
+                    fever_range = "Range: >104.0°F"
+                    severity_level = "Severe"
+                
+                # Display fever status box (aligned with temperature input)
+                if temperature >= 100.4:
+                    st.markdown(f"""
+                    <div style="background-color: #fff3cd; border-left: 3px solid #ffc107; padding: 8px 12px; border-radius: 6px; margin-top: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: #856404; font-size: 14px; font-weight: bold;">{fever_status}</span>
+                                <span style="color: #6c757d; font-size: 12px; margin-left: 8px;">{fever_range}</span>
+                            </div>
+                            <span style="font-size: 14px;">🌡️</span>
                         </div>
-                        <span style="font-size: 14px;">🌡️</span>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        # 4. Severity level slider
-        severity_options = ["None", "Mild", "Moderate", "Severe"]
-        current_severity_index = severity_options.index(severity_level) if severity_level in severity_options else 1
-        
-        severity_level = st.select_slider(
-            "Severity level (auto-detected from temperature):",
-            options=severity_options,
-            value=severity_level,
-            help="Select the severity level of your symptoms"
-        )
-        
-        # 5. Any triggers or patterns (last)
-        triggers_patterns = st.text_area(
-            "Any triggers or patterns?",
-            placeholder="e.g., worse in the morning, after eating, during exercise...",
-            height=100,
-            help="Describe any patterns or triggers you've noticed"
-        )
-        
+                    """, unsafe_allow_html=True)
+            
+            # 4. Severity level slider
+            severity_options = ["None", "Mild", "Moderate", "Severe"]
+            current_severity_index = severity_options.index(severity_level) if severity_level in severity_options else 1
+            
+            severity_level = st.select_slider(
+                "Severity level (auto-detected from temperature):",
+                options=severity_options,
+                value=severity_level,
+                help="Select the severity level of your symptoms"
+            )
+            
+            # 5. Any triggers or patterns (last)
+            triggers_patterns = st.text_area(
+                "Any triggers or patterns?",
+                placeholder="e.g., worse in the morning, after eating, during exercise...",
+                height=100,
+                help="Describe any patterns or triggers you've noticed"
+            )
+
         # Combine all symptom information
         symptom_changes = f"Temperature: {temperature}°F, Severity: {severity_level}"
         if symptom_description:
